@@ -7,48 +7,40 @@
 #include "myTypes.c"
 #include "bst.c"
 
+#define COMMANDMAXLEN 1024
+
 Ricetta * cerca_ricetta(Nome nome);
 int aggiungi_ricetta(Nome nome, CompRicetta * cr);
+Input analizza_input();
+CompRicetta * input_to_comp_ricetta(Input inp);
 
-Nome * analizza_input(){
-
-  Nome * out = malloc(sizeof(Nome));
-  if(out == NULL){
-    perror("Malloc failed");
-    exit(EXIT_FAILURE);
-  }
-
-  int cont = 0;
-
-  while (true) {
-      char in;
-      do{
-        scanf("%c", &in);
-      } while(in != ' ' && in != :)
-
-      // Verifica se il prossimo carattere è un newline   
-      cont++;
-      out = realloc(out, sizeof(Nome) * (cont + 1));
-  }   
-
-  for(int i = 0; i < cont; i++){
-    printf("%s\n", out[i]);
-  }
+int esegui_input(Input inp){
   
-  return out;
-
-}
-
-int esegui_input(){
+  if(inp.dim == 0){
+    printf("Input is empty!\n");
+    return 1;
+  }
 
   Nome istr;
-  scanf("%s", istr);
-
+  strcpy(istr, inp.tokens[0]);
+  
   if(strcmp(istr, "aggiungi_ricetta") == 0){
+
+    Nome nome;
+    strcpy(nome, inp.tokens[1]);
+
+    if(cerca_ricetta(nome) != NULL){
+      printf("Ricetta già esistente!\n");
+      return 2;
+    }
+  
+    CompRicetta * comp = input_to_comp_ricetta(inp);
+    aggiungi_ricetta(nome, comp);
 
     printf("Aggiunta ricetta\n");
     return AGG;
   }
+
   else if(strcmp(istr, "rimuovi_ricetta") == 0){
     printf("Rimossa ricetta\n");
     return RMV;
@@ -76,27 +68,22 @@ Albero ricettario = {
 
 int main(){
   
-  analizza_input();
-  return 0;
-
-#if 0
   while(!end_program){
     printf("\ntime: %d\n", t);
-    int istr = analizza_input();
+    Input inp = analizza_input();
+    int istr = esegui_input(inp);
 
-    if(istr == END) end_program = 1;
+    if(istr == END) end_program = true;
     else{
-      
-
       printf("%d\n", istr);
       t++;
-    }
+    } 
   }
 
+  stampa_albero(ricettario.root);
+  dealloca_albero(ricettario.root);
 
   return 0; 
-
-#endif
 
 }
 
@@ -118,7 +105,7 @@ Ricetta * cerca_ricetta(Nome nome) {
 //  - 2 se la malloc fallisce 
 int aggiungi_ricetta(Nome nome, CompRicetta * cr){
   
-  if(cerca_ricetta(nome) == NULL){
+  if(cerca_ricetta(nome) != NULL){
     printf("[WAR] Ricetta già esistente\n");
     return 1;
   }
@@ -136,4 +123,53 @@ int aggiungi_ricetta(Nome nome, CompRicetta * cr){
   return 0;  
 }
 
+//Legge una riga di input di lunghezza massima COMMANDMAXLEN e ritorna uno struct contenente la quantità
+//di tokens e un puntatore all'array che li contiene
+Input analizza_input(){
 
+  Nome * tokens = NULL;
+  char input[COMMANDMAXLEN];
+  scanf(" %[^\n]", input);
+
+  char * tk = strtok(input, " ");
+  int cont = 0;
+
+  while(tk != NULL && strcmp(tk, "\n") != 0){
+    tokens = realloc(tokens, sizeof(Nome) * (1 + cont));
+    if(tokens == NULL){
+      perror("Realloc failed!");
+      exit(EXIT_FAILURE);
+    }
+
+    strcpy(tokens[cont], tk);
+
+    cont++;
+    tk = strtok(NULL, " ");
+
+  }
+
+  Input out = {
+    .tokens = tokens,
+    .dim = cont
+  };
+  
+  return out;
+}
+
+//Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
+//e ritorna un array di componenti della ricetta
+CompRicetta * input_to_comp_ricetta(Input inp){
+  size_t numParametri = (inp.dim - 2); // Numero di parametri rimasti dopo aver letto l'istruzione ed il nome
+  CompRicetta * comp = malloc(sizeof(CompRicetta) * (numParametri / 2) ); // Numero di coppie Ingrediente Quantità
+  if(comp == NULL){
+    perror("Malloc failed in input_to_comp_ricetta!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  for(size_t i = 0; i < numParametri; i += 2){
+    strcpy(comp[i].ingr.nome, inp.tokens[1 + i]);
+    comp[i].qnt = atoi(inp.tokens[1 + (i + 1)]);
+  }
+
+  return comp;
+}

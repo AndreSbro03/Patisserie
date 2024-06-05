@@ -8,3 +8,4 @@ DFLAGS="-lm" #-lX11
 NAME="App"
 
 gcc $CFLAGS -o $NAME main.c $DFLAGS
+mv $NAME Build/

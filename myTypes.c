@@ -2,8 +2,13 @@
 
 typedef char Nome[STRMAXLEN];
 
+typedef struct {
+  Nome * tokens;
+  size_t dim;
+} Input;
+
 typedef struct{
-  int id; 
+  ////int id; 
   Nome nome;
 } Ingrediente;
 
