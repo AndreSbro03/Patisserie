@@ -10,14 +10,17 @@
 #define COMMANDMAXLEN 1024
 
 Ricetta * cerca_ricetta(Nome nome);
-int aggiungi_ricetta(Nome nome, CompRicetta * cr);
+int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim);
 Input analizza_input();
-CompRicetta * input_to_comp_ricetta(Input inp);
+CompRicetta * input_to_comp_ricetta(Input inp, size_t * dim);
+void dealloca_ricetta(Ricetta * rc);
+void rimuovi_ricetta(Nome nome);
 
+// Ritorna il numero dell'istruzione eseguita, se negativo allora si è verificato un problema nella relativa isturione
 int esegui_input(Input inp){
   
   if(inp.dim == 0){
-    printf("Input is empty!\n");
+    printf("Input vuoto!\n");
     return 1;
   }
 
@@ -30,21 +33,29 @@ int esegui_input(Input inp){
     strcpy(nome, inp.tokens[1]);
 
     if(cerca_ricetta(nome) != NULL){
-      printf("Ricetta già esistente!\n");
-      return 2;
+      printf("Esiste già una ricetta chiamata \"%s\".\n", nome);
+      return -AGG;
     }
-  
-    CompRicetta * comp = input_to_comp_ricetta(inp);
-    aggiungi_ricetta(nome, comp);
+ 
+    size_t dim;
+    CompRicetta * comp = input_to_comp_ricetta(inp, &dim);
+    aggiungi_ricetta(nome, comp, dim);
 
-    printf("Aggiunta ricetta\n");
+    //TODO: ricordati di deallocare le varie componenti delle ricette
+
     return AGG;
   }
 
   else if(strcmp(istr, "rimuovi_ricetta") == 0){
-    printf("Rimossa ricetta\n");
+    
+    Nome nome;
+    strcpy(nome, inp.tokens[1]);
+
+    rimuovi_ricetta(nome);
+
     return RMV;
   }
+
   else if(strcmp(istr, "rifornimento") == 0){
     printf("Rifornito\n");
     return RIF;
@@ -70,8 +81,8 @@ int main(){
   
   while(!end_program){
     printf("\ntime: %d\n", t);
-    Input inp = analizza_input();
-    int istr = esegui_input(inp);
+    Input input = analizza_input();
+    int istr = esegui_input(input);
 
     if(istr == END) end_program = true;
     else{
@@ -81,8 +92,8 @@ int main(){
   }
 
   stampa_albero(ricettario.root);
-  dealloca_albero(ricettario.root);
-
+  //dealloca_albero(ricettario.root, NULL);
+  dealloca_albero(ricettario.root, &dealloca_ricetta);
   return 0; 
 
 }
@@ -103,7 +114,7 @@ Ricetta * cerca_ricetta(Nome nome) {
 //  - 0 se aggiunta correttamente
 //  - 1 se la ricetta esiste già
 //  - 2 se la malloc fallisce 
-int aggiungi_ricetta(Nome nome, CompRicetta * cr){
+int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
   
   if(cerca_ricetta(nome) != NULL){
     printf("[WAR] Ricetta già esistente\n");
@@ -117,8 +128,11 @@ int aggiungi_ricetta(Nome nome, CompRicetta * cr){
   }
 
   rt->comp = cr;
+  rt->qnt = dim;
 
   aggiungi_cella(&ricettario, init_cella(nome, rt));
+
+  printf("Ricetta \"%s\" aggiunta correttamente.\n", nome);
 
   return 0;  
 }
@@ -158,9 +172,11 @@ Input analizza_input(){
 
 //Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
 //e ritorna un array di componenti della ricetta
-CompRicetta * input_to_comp_ricetta(Input inp){
-  size_t numParametri = (inp.dim - 2); // Numero di parametri rimasti dopo aver letto l'istruzione ed il nome
-  CompRicetta * comp = malloc(sizeof(CompRicetta) * (numParametri / 2) ); // Numero di coppie Ingrediente Quantità
+CompRicetta * input_to_comp_ricetta(Input inp, size_t * dim){
+  size_t numParametri = (inp.dim - 2); // Numero di parametri rimasti dopo aver letto l'istruzione ed il Nome
+  *dim = numParametri / 2;// Numero di coppie Ingrediente Quantità
+  CompRicetta * comp = malloc(sizeof(CompRicetta) * (*dim));
+
   if(comp == NULL){
     perror("Malloc failed in input_to_comp_ricetta!\n");
     exit(EXIT_FAILURE);
@@ -172,4 +188,22 @@ CompRicetta * input_to_comp_ricetta(Input inp){
   }
 
   return comp;
+}
+
+void dealloca_ricetta(Ricetta * rc){
+    free(rc->comp);
+}
+
+// Rimuove la ricetta se la trova
+void rimuovi_ricetta(Nome nome){
+  Ptr_cella x = cerca_cella(ricettario.root, nome);
+  if(x != NULL){
+    x = rimuovi_cella(&ricettario, x);
+    dealloca_ricetta(x->ricetta);
+    free(x);
+    printf("Ricetta \"%s\" rimossa correttamente.\n", nome);
+  }
+  else{
+    printf("Nessuna ricetta chiamata \"%s\" trovata.\n", nome);
+  }
 }

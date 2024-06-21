@@ -8,7 +8,6 @@ typedef struct {
 } Input;
 
 typedef struct{
-  ////int id; 
   Nome nome;
 } Ingrediente;
 
@@ -19,6 +18,7 @@ typedef struct {
  
 typedef struct {
   CompRicetta * comp;
+  size_t qnt;
 } Ricetta;
 
 typedef struct {
@@ -33,7 +33,7 @@ typedef struct {
 } Magazzino;
 
 enum {
-  AGG,
+  AGG = 1,
   RMV,
   RIF,
   ORD,

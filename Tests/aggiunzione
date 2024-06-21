@@ -1,0 +1,9 @@
+aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
+aggiungi_ricetta gelato latte 10 vaniglia 1
+aggiungi_ricetta torta mele 10 lievito 1
+aggiungi_ricetta budino farina 10 zucchero 1
+aggiungi_ricetta zucca mele 10 lievito 1
+aggiungi_ricetta torta mele 10 lievito 1
+rimuovi_ricetta zucca
+rimuovi_ricetta tiramisu
+end

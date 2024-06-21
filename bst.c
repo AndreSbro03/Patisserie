@@ -1,3 +1,15 @@
+//#define EXEC 1
+
+#ifdef EXEC
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <stdarg.h>
+  #include <stdbool.h>
+
+  #include "myTypes.c"
+#endif
+
 typedef struct Cella{
   Nome key;
   Ricetta * ricetta;
@@ -80,15 +92,85 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
   else{
     y->right = elem;
   }
+}
+
+Ptr_cella cella_minima(Ptr_cella x){
+  while(x->left != NULL){
+    x = x->left;
+  }
+  return x;
+}
+
+Ptr_cella cella_successiva(Ptr_cella x){
+  if(x->right != NULL) {
+    return cella_minima(x->right);
+  }
+  Ptr_cella y = x->p;
+
+  while(y != NULL && x == y->right){
+    x = y;
+    y = x->p;
+  }
+  return y;
 
 }
 
-void dealloca_albero(Ptr_cella x){
+Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
+
+  Ptr_cella rmv, temp;
+
+  // Se la cella non ha sotto-alberi allora basta rimuoverla
+  // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
+  // andare a sostituire in z.
+  if(z->left == NULL && z->right == NULL){
+    rmv = z;
+  }
+  else{
+    rmv = cella_successiva(z);
+  } 
+  
+  // Se la cella da rimuovere ha un ramo sinistro andiamo a salvare
+  // il puntatore al ramo sennò salviamo quello destro 
+  if(rmv->left != NULL){
+    temp = rmv->left;
+  }
+  else{
+    temp = rmv->right;
+  }
+
+  // Andiamo a dire al sotto-albero che adesso la sua cella padre è quella di rmv
+  if(temp != NULL){
+    temp->p = rmv->p;
+  }
+
+  // Se la cella da rimuvore non ha un padre allora significa che bisgna andare a sostituire
+  // la radice dell'albero con il nostro sottalbero salvato, sennò se la cella da rimuovere fa 
+  // parte di un sottoalbero sinistro/destro mettiamo il sotto-albero a sinistra/destra.
+  if(rmv->p == NULL){
+    T->root = temp;
+  }
+  else if(rmv == rmv->p->left){
+    rmv->p->left = temp;
+  }
+  else{
+    rmv->p->right = temp;
+  }
+
+  if(rmv != z){
+    strcpy(z->key,rmv->key);
+    z->ricetta = rmv->ricetta;
+  }
+
+  return rmv;
+}
+
+void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (Ricetta *)){
 
   if(x != NULL){
-    dealloca_albero(x->left);
-    dealloca_albero(x->right);
+    dealloca_albero(x->left, dealloca_dati);
+    dealloca_albero(x->right, dealloca_dati);
     printf("Ho liberato <%s>!\n", x->key);
+    if(dealloca_dati != NULL) (*dealloca_dati)(x->ricetta);
     free(x);
   }
 }
@@ -101,7 +183,7 @@ void stampa_albero(Ptr_cella x){
   }
 }
 
-#if 0
+#ifdef EXEC
   int main() {
     
     Albero T = {
@@ -119,6 +201,13 @@ void stampa_albero(Ptr_cella x){
     aggiungi_cella(&T, init_cella(n4, NULL));
     aggiungi_cella(&T, init_cella(n5, NULL));
 
+    Ptr_cella x = cerca_cella(T.root, "ciao");
+    if(x != NULL){
+      printf("Rimosso cella\n");
+      x = rimuovi_cella(&T, x);
+      free(x);
+    }
+  
     if(cerca_cella(T.root, "ciao") != NULL) printf("Trovato!\n");
     else printf("Non trovato!\n");
     if(cerca_cella(T.root, "bb") != NULL) printf("Trovato!\n");
@@ -126,11 +215,9 @@ void stampa_albero(Ptr_cella x){
     if(cerca_cella(T.root, "feofeonfejnn") != NULL) printf("Trovato!\n");
     else printf("Non trovato!\n");
 
-
-
-
+    
     stampa_albero(T.root);
-    dealloca_albero(T.root);
+    dealloca_albero(T.root, NULL);
 
     return 0;
   }
