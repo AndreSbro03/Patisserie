@@ -6,4 +6,10 @@ aggiungi_ricetta zucca mele 10 lievito 1
 aggiungi_ricetta torta mele 10 lievito 1
 rimuovi_ricetta zucca
 rimuovi_ricetta tiramisu
+rifornimento lievito 10 20
+rifornimento uova 10 1
+rifornimento biscotti 15 100 zucchero 1 1000 mele 2 100
+rifornimento lievito 13 10
+end
+aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
 end

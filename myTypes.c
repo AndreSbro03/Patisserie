@@ -4,33 +4,45 @@ typedef char Nome[STRMAXLEN];
 
 typedef struct {
   Nome * tokens;
-  size_t dim;
+  size_t len;
 } Input;
 
-typedef struct{
-  Nome nome;
-} Ingrediente;
+typedef Nome Ingrediente;
 
 typedef struct {  
-  Ingrediente ingr;
+  int ingId;
   int qnt;
 } CompRicetta;
  
 typedef struct {
   CompRicetta * comp;
-  size_t qnt;
+  size_t len;
 } Ricetta;
 
-typedef struct {
-  Ingrediente ingr;
+typedef struct Lotto{
+  size_t ingId;
   int qnt;
   int scadenza;
-} Lotto;
+  
+  struct Lotto * next;
+
+} lotto_t;
+
+typedef lotto_t * Ptr_lotto; 
+
+// Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
+// La coppia (ingrediente,indice) verrà salvata in una hash table. l'array dinamico conterrà
+// delle linked list di lotti.
 
 typedef struct {
-  Lotto * lt;
-  int * scorte_id;
+  Ptr_lotto * sez;
+  size_t len;
 } Magazzino;
+
+typedef struct {
+  Nome * ing;
+  size_t len;
+} Ingredienti;
 
 enum {
   AGG = 1,

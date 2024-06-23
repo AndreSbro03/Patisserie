@@ -36,8 +36,29 @@ Ptr_cella init_cella(Nome k, Ricetta * rct){
   Ptr_cella out = alloca_cella();
   strcpy(out->key, k);
   out->ricetta = rct;
+  out->p = NULL;
+  out->left = NULL;
+  out->right = NULL;
   return out;
 }
+
+// Funzione di hash djb2
+unsigned long hash_djb2(Nome str) {
+    unsigned long hash = 5381;
+
+    for(size_t i = 0; str[i] != 0; i++){
+        hash = ((hash << 5) + hash) + str[i]; // hash * 33 + c
+    }
+
+    return hash;
+}
+
+/*
+  bool valore_minore(Nome k1, Nome k2){
+  return hash_djb2(k1) <= hash_djb2(k2);
+}
+*/
+
 
 //restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
 bool valore_minore(Nome k1, Nome k2){
@@ -156,9 +177,13 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
     rmv->p->right = temp;
   }
 
+  // Faccio uno swap dei dati perchè sennò potrei avere problemi con una successiva free
   if(rmv != z){
+    Ricetta * t;
     strcpy(z->key,rmv->key);
+    t = z->ricetta;
     z->ricetta = rmv->ricetta;
+    rmv->ricetta = t;
   }
 
   return rmv;
@@ -201,18 +226,23 @@ void stampa_albero(Ptr_cella x){
     aggiungi_cella(&T, init_cella(n4, NULL));
     aggiungi_cella(&T, init_cella(n5, NULL));
 
-    Ptr_cella x = cerca_cella(T.root, "ciao");
+    Nome cerca = "ciao";
+
+    Ptr_cella x = cerca_cella(T.root, cerca);
     if(x != NULL){
       printf("Rimosso cella\n");
       x = rimuovi_cella(&T, x);
       free(x);
     }
-  
-    if(cerca_cella(T.root, "ciao") != NULL) printf("Trovato!\n");
+    
+    
+    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
+    else printf("Non trovato!\n");    
+    strcpy(cerca, "come");
+    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
     else printf("Non trovato!\n");
-    if(cerca_cella(T.root, "bb") != NULL) printf("Trovato!\n");
-    else printf("Non trovato!\n");
-    if(cerca_cella(T.root, "feofeonfejnn") != NULL) printf("Trovato!\n");
+    strcpy(cerca, "fafueioj");
+    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
     else printf("Non trovato!\n");
 
     
