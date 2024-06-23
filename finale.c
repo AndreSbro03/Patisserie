@@ -4,10 +4,292 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
-#include "myTypes.c"
-#include "bst.c"
+#define COMMANDMAXLEN 4096
 
-#define COMMANDMAXLEN 1024
+#define STRMAXLEN 255 + 1
+
+typedef char Nome[STRMAXLEN];
+
+typedef struct {
+  Nome * tokens;
+  size_t len;
+} Input;
+
+typedef Nome Ingrediente;
+
+typedef struct {  
+  int ingId;
+  int qnt;
+} CompRicetta;
+ 
+typedef struct {
+  CompRicetta * comp;
+  size_t len;
+} Ricetta;
+
+typedef struct Lotto{
+  size_t ingId;
+  int qnt;
+  int scadenza;
+  
+  struct Lotto * next;
+
+} lotto_t;
+
+typedef lotto_t * Ptr_lotto;
+
+typedef struct {
+  Ptr_lotto lt;
+  int qnt;
+} Sezione;
+
+// Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
+// La coppia (ingrediente,indice) verrà salvata in una hash table. l'array dinamico conterrà
+// delle linked list di lotti.
+
+typedef struct {
+  Sezione * sez;
+  size_t len;
+} Magazzino;
+
+typedef struct {
+  Nome * ing;
+  size_t len;
+} Ingredienti;
+
+typedef struct {
+  Nome nome;
+  Ricetta rc;
+  int qnt;
+  int peso;
+  size_t t;
+} Ordine;
+
+typedef struct ListaOrdini{
+  Ordine ord;
+  struct ListaOrdini * next;
+} listaordini_t;
+
+typedef listaordini_t * Ptr_ordine;
+
+typedef struct{
+  Ptr_ordine buff; //Primo elemento
+  Ptr_ordine sp;   //Ultimo elemento
+} Coda;
+
+typedef struct {
+  int cap;
+  size_t t;
+  Ordine * buff;
+  size_t len;
+} Corriere;
+
+enum {
+  AGG = 1,
+  RMV,
+  RIF,
+  ORD,
+  END,
+} Istr; 
+
+
+typedef struct Cella{
+  Nome key;
+  Ricetta * ricetta;
+
+  struct Cella * p;
+  struct Cella * left;
+  struct Cella * right;
+
+} cella_t;
+
+typedef cella_t* Ptr_cella; 
+
+typedef struct{
+  Ptr_cella root;
+} Albero;
+
+
+Ptr_cella alloca_cella(){
+  Ptr_cella out = malloc(sizeof(cella_t));
+  return out;
+}
+
+Ptr_cella init_cella(Nome k, Ricetta * rct){
+  Ptr_cella out = alloca_cella();
+  strcpy(out->key, k);
+  out->ricetta = rct;
+  out->p = NULL;
+  out->left = NULL;
+  out->right = NULL;
+  return out;
+}
+
+// Funzione di hash djb2
+unsigned long hash_djb2(Nome str) {
+    unsigned long hash = 5381;
+
+    for(size_t i = 0; str[i] != 0; i++){
+        hash = ((hash << 5) + hash) + str[i]; // hash * 33 + c
+    }
+
+    return hash;
+}
+
+/*
+  bool valore_minore(Nome k1, Nome k2){
+  return hash_djb2(k1) <= hash_djb2(k2);
+}
+*/
+
+
+//restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
+bool valore_minore(Nome k1, Nome k2){
+  
+  int i = 0;
+  while(k1[i] != '\0'){
+    if(k2[i] == '\0') return false; //la seconda stringa è più corta della prima
+    
+    if(k1[i] != k2[i]) return (k2[i] > k1[i]); //appena trovo due caratteri discordi ritorno il risutato della disquazione
+
+    i++;
+  }
+  return (k2[i] != '\0'); //se la stringa 2 è non è ancora terminata restituisco ture sennò significa che le due stringhe sono identiche e restituisco false
+}
+
+//Cerco la cella contenente una certa chiave nell'albero, se non la trovo ritrono NULL
+Ptr_cella cerca_cella(Ptr_cella cl, Nome k){
+  if(cl == NULL || strcmp(k, cl -> key) == 0) return cl;
+
+  if(valore_minore(k, cl->key)) 
+    return cerca_cella(cl->left, k);
+  else 
+    return cerca_cella(cl->right, k);
+
+}
+
+void aggiungi_cella(Albero * T, Ptr_cella elem){
+  
+  Ptr_cella y = NULL;
+  Ptr_cella x = T->root;
+
+  // Vado a cercare il punto dell'albero dove andare ad aggiungere la cella
+  while(x != NULL){
+    y = x;
+    if(valore_minore(elem->key, x->key)){
+      x = x->left;
+    }
+    else{
+      x = x->right;
+    }
+  }
+
+  elem->p = y; //y è l'ultimo nodo valido prima di trovare NULL
+  
+  //Se l'albero è vuoto
+  if(y == NULL){
+    T->root = elem;
+  }
+  else if(valore_minore(elem->key, y->key)){
+    y->left = elem;  
+  }
+  else{
+    y->right = elem;
+  }
+}
+
+Ptr_cella cella_minima(Ptr_cella x){
+  while(x->left != NULL){
+    x = x->left;
+  }
+  return x;
+}
+
+Ptr_cella cella_successiva(Ptr_cella x){
+  if(x->right != NULL) {
+    return cella_minima(x->right);
+  }
+  Ptr_cella y = x->p;
+
+  while(y != NULL && x == y->right){
+    x = y;
+    y = x->p;
+  }
+  return y;
+
+}
+
+Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
+
+  Ptr_cella rmv, temp;
+
+  // Se la cella non ha sotto-alberi allora basta rimuoverla
+  // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
+  // andare a sostituire in z.
+  if(z->left == NULL && z->right == NULL){
+    rmv = z;
+  }
+  else{
+    rmv = cella_successiva(z);
+  } 
+  
+  // Se la cella da rimuovere ha un ramo sinistro andiamo a salvare
+  // il puntatore al ramo sennò salviamo quello destro 
+  if(rmv->left != NULL){
+    temp = rmv->left;
+  }
+  else{
+    temp = rmv->right;
+  }
+
+  // Andiamo a dire al sotto-albero che adesso la sua cella padre è quella di rmv
+  if(temp != NULL){
+    temp->p = rmv->p;
+  }
+
+  // Se la cella da rimuvore non ha un padre allora significa che bisgna andare a sostituire
+  // la radice dell'albero con il nostro sottalbero salvato, sennò se la cella da rimuovere fa 
+  // parte di un sottoalbero sinistro/destro mettiamo il sotto-albero a sinistra/destra.
+  if(rmv->p == NULL){
+    T->root = temp;
+  }
+  else if(rmv == rmv->p->left){
+    rmv->p->left = temp;
+  }
+  else{
+    rmv->p->right = temp;
+  }
+
+  // Faccio uno swap dei dati perchè sennò potrei avere problemi con una successiva free
+  if(rmv != z){
+    Ricetta * t;
+    strcpy(z->key,rmv->key);
+    t = z->ricetta;
+    z->ricetta = rmv->ricetta;
+    rmv->ricetta = t;
+  }
+
+  return rmv;
+}
+
+void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (Ricetta *)){
+
+  if(x != NULL){
+    dealloca_albero(x->left, dealloca_dati);
+    dealloca_albero(x->right, dealloca_dati);
+    //printf("Ho liberato <%s>!\n", x->key);
+    if(dealloca_dati != NULL) (*dealloca_dati)(x->ricetta);
+    free(x);
+  }
+}
+
+void stampa_albero(Ptr_cella x){
+  if(x != NULL){
+    stampa_albero(x->left);
+    printf("%s\n", x->key);
+    stampa_albero(x->right);
+  }
+}
 
 Ricetta * cerca_ricetta(Nome nome);
 int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t len);
@@ -66,7 +348,7 @@ Corriere corriere = {
 Coda pronti = {.buff = NULL, .sp = NULL};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
-// TODO: rivedere completamente l'algoritmo di ordinamento
+
 void stupidsort(int *sorted) {
     int *visited = malloc(corriere.len * sizeof(int));
     for (size_t i = 0; i < corriere.len; i++) {
@@ -96,9 +378,9 @@ int main(){
   init_corriere(input);
 
   while(!end_program){
-    printf("\ntime: %d\n", t);
+    //printf("\ntime: %d\n", t);
 
-    if(t % corriere.t == 0 && t != 0){
+    if(t % corriere.t == 0){
       //printf("passa il corriere\n");
       carica_corriere();
       ripristina_corriere();
@@ -203,19 +485,14 @@ int esegui_input(Input inp){
       aggiungi_lotto(lt);
       //printf("Lotto di \"%s\"(%ld) inserito correttamente.\n", inp.tokens[i], lt->ingId);
 
-      //TODO: gli ordini vanno aggiunti per tempo non in coda
       Ptr_ordine temp = attesa.buff;
       while(temp != NULL){
         if(ci_sono_ingr(temp->ord)){
           //printf("Preparo l'ordine \"%s\".\n", temp->ord.nome);
           prepara_ordine(&(temp->ord));
           rimuovi_ordine_testa(&attesa);
-          temp = attesa.buff;
         }
-        else{
-          temp = temp->next;
-        }
-        
+        temp = attesa.buff;
       }
     }
 
@@ -305,7 +582,8 @@ Input analizza_input(){
 
   Nome * tokens = NULL;
   char input[COMMANDMAXLEN];
-  scanf(" %[^\n]", input);
+  int unused = scanf(" %[^\n]", input);
+  (void) unused;
 
   char * tk = strtok(input, " ");
   int cont = 0;
@@ -400,7 +678,7 @@ int rimuovi_ricetta(Nome nome){
 void espandi_magazzino(int ingId){
   size_t len = ingId + 1;
 
-  magazzino.sez = reallocarray(magazzino.sez, len, sizeof(Sezione));
+  magazzino.sez = realloc(magazzino.sez, len * sizeof(Sezione));
   if(magazzino.sez == NULL){
     perror("Realloc failed!");
     exit(EXIT_FAILURE);
@@ -423,7 +701,7 @@ Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt){
   Ptr_lotto temp, prec = NULL;
   for(temp = testaLt; temp != NULL; temp = temp->next){
 
-    //printf("%d\n", temp->scadenza);
+    printf("%d\n", temp->scadenza);
     if(lt->scadenza < temp->scadenza){
       lt->next = temp;
       if(prec != NULL){
@@ -544,7 +822,6 @@ void preleva_ingredienti(Sezione * sez, int qnt){
     }
 
     if(left == 0){
-      sez->lt = temp;
       sez->qnt -= qnt;
       return;
     }
@@ -622,7 +899,7 @@ bool ricetta_in_coda(Nome nome, Coda cd){
 
 void espandi_corriere(){
 
-  corriere.buff = reallocarray(corriere.buff, corriere.len + 1, sizeof(Ordine));
+  corriere.buff = realloc(corriere.buff, (corriere.len + 1) * sizeof(Ordine));
   if(corriere.buff  == NULL){
     perror("Realloc failed!");
     exit(EXIT_FAILURE);

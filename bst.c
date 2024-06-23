@@ -194,7 +194,7 @@ void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (Ricetta *)){
   if(x != NULL){
     dealloca_albero(x->left, dealloca_dati);
     dealloca_albero(x->right, dealloca_dati);
-    printf("Ho liberato <%s>!\n", x->key);
+    //printf("Ho liberato <%s>!\n", x->key);
     if(dealloca_dati != NULL) (*dealloca_dati)(x->ricetta);
     free(x);
   }

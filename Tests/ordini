@@ -1,0 +1,11 @@
+5 325
+rifornimento zucchero 50 1 uova 50 10 caffe 20 20
+aggiungi_ricetta tiramisu uova 10 zucchero 10 caffe 1
+ordine zucca 10
+ordine tiramisu 3 
+rifornimento zucchero 50 100
+ordine tiramisu 3
+rimuovi_ricetta tiramisu
+ordine tiramisu 1
+aggiungi_ricetta cream sborra 1
+rimuovi_ricetta cream

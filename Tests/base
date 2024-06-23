@@ -1,3 +1,4 @@
+5 325
 aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
 aggiungi_ricetta gelato latte 10 vaniglia 1
 aggiungi_ricetta torta mele 10 lievito 1
@@ -10,6 +11,5 @@ rifornimento lievito 10 20
 rifornimento uova 10 1
 rifornimento biscotti 15 100 zucchero 1 1000 mele 2 100
 rifornimento lievito 13 10
-end
 aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
-end
+ordine gelato 10
