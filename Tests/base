@@ -1,15 +1,15 @@
-5 325
-aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
-aggiungi_ricetta gelato latte 10 vaniglia 1
-aggiungi_ricetta torta mele 10 lievito 1
-aggiungi_ricetta budino farina 10 zucchero 1
-aggiungi_ricetta zucca mele 10 lievito 1
-aggiungi_ricetta torta mele 10 lievito 1
-rimuovi_ricetta zucca
+7 200
+aggiungi_ricetta tiramisu biscotti 20 caffe 1 uova 4
+ordine tiramisu 5
 rimuovi_ricetta tiramisu
-rifornimento lievito 10 20
-rifornimento uova 10 1
-rifornimento biscotti 15 100 zucchero 1 1000 mele 2 100
-rifornimento lievito 13 10
-aggiungi_ricetta tiramisu uova 2 biscotti 10 caffe 9
+rimuovi_ricetta gelato
+aggiungi_ricetta gelato latte 15 zucchero 10
+ordine tiramisu 2 
 ordine gelato 10
+ordine gelato 100
+rifornimento latte 15 100 latte 150 10 zucchero 500 20 caffe 10 20 
+rifornimento uova 24 15
+rimuovi_ricetta gelato
+aggiungi_ricetta gelato mele 2 
+rifornimento biscotti 200 20 
+ordine tiramisu 2

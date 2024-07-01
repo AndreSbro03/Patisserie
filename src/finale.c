@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
-#define COMMANDMAXLEN 4096
+#define COMMANDMAXLEN 2048
 
 #define STRMAXLEN 255 + 1
 
@@ -84,14 +84,14 @@ typedef struct {
   size_t len;
 } Corriere;
 
+
 enum {
   AGG = 1,
   RMV,
   RIF,
   ORD,
   END,
-} Istr; 
-
+} Istr;
 
 typedef struct Cella{
   Nome key;
@@ -124,24 +124,6 @@ Ptr_cella init_cella(Nome k, Ricetta * rct){
   out->right = NULL;
   return out;
 }
-
-// Funzione di hash djb2
-unsigned long hash_djb2(Nome str) {
-    unsigned long hash = 5381;
-
-    for(size_t i = 0; str[i] != 0; i++){
-        hash = ((hash << 5) + hash) + str[i]; // hash * 33 + c
-    }
-
-    return hash;
-}
-
-/*
-  bool valore_minore(Nome k1, Nome k2){
-  return hash_djb2(k1) <= hash_djb2(k2);
-}
-*/
-
 
 //restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
 bool valore_minore(Nome k1, Nome k2){
@@ -226,7 +208,7 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
   // Se la cella non ha sotto-alberi allora basta rimuoverla
   // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
   // andare a sostituire in z.
-  if(z->left == NULL && z->right == NULL){
+  if(z->left == NULL || z->right == NULL){
     rmv = z;
   }
   else{
@@ -283,13 +265,6 @@ void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (Ricetta *)){
   }
 }
 
-void stampa_albero(Ptr_cella x){
-  if(x != NULL){
-    stampa_albero(x->left);
-    printf("%s\n", x->key);
-    stampa_albero(x->right);
-  }
-}
 
 Ricetta * cerca_ricetta(Nome nome);
 int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t len);
@@ -310,13 +285,13 @@ void rimuovi_scaduti(Sezione * sez);
 bool ci_sono_ingr(Ordine ord);
 Ptr_lotto dealloca_testa(Ptr_lotto testa);
 void preleva_ingredienti(Sezione * sez, int qnt);
-void aggiungi_ordine(Ordine ord, Coda * cd);
+void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento);
 void aggiungi_ordine_in_coda(Ptr_ordine elem, Coda * cd);
-void prepara_ordine(Ordine * ord);
+void prepara_ordine(Ordine ord, bool rifornimento);
 void dealloca_ordini(Coda * cd);
 bool ricetta_in_coda(Nome nome, Coda cd);
 void espandi_corriere();
-void rimuovi_ordine_testa(Coda * cd);
+void rimuovi_testa_coda(Coda * cd);
 void sposta_ordini_corriere();
 void carica_corriere();
 void ripristina_corriere();
@@ -348,28 +323,22 @@ Corriere corriere = {
 Coda pronti = {.buff = NULL, .sp = NULL};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
+void insertion_sort(){
+  for(size_t j = 1; j < corriere.len; ++j){
+    Ordine key = corriere.buff[j];
+    int i = (int) j - 1;
 
-void stupidsort(int *sorted) {
-    int *visited = malloc(corriere.len * sizeof(int));
-    for (size_t i = 0; i < corriere.len; i++) {
-        visited[i] = 0; // Inizializza l'array dei visitati a 0 (falso)
+    while(i >= 0 && corriere.buff[i].peso < key.peso){
+      corriere.buff[i + 1] = corriere.buff[i];
+      i--;
     }
 
-    for (size_t j = 0; j < corriere.len; j++) {
-        int max = -1;
-        int maxIdx = -1;
+    corriere.buff[i + 1] = key;
+  }
+}
 
-        for (size_t i = 0; i < corriere.len; i++) {
-            if (!visited[i] && corriere.buff[i].peso > max) {
-                max = corriere.buff[i].peso;
-                maxIdx = i;
-            }
-        }
-        sorted[j] = maxIdx;
-        visited[maxIdx] = 1; // Segna l'elemento come visitato
-    }
-
-    free(visited);
+void sort_corriere() {
+  insertion_sort();
 }
 
 int main(){
@@ -380,7 +349,7 @@ int main(){
   while(!end_program){
     //printf("\ntime: %d\n", t);
 
-    if(t % corriere.t == 0){
+    if(t % corriere.t == 0 && t != 0){
       //printf("passa il corriere\n");
       carica_corriere();
       ripristina_corriere();
@@ -388,6 +357,13 @@ int main(){
 
     input = analizza_input();
     int istr = esegui_input(input);
+   
+    /*
+    printf("pronti: \n");
+    printLL(pronti.buff);
+    printf("attesa: \n");
+    printLL(attesa.buff);
+    */
 
     if(istr == END) end_program = true;
     else{
@@ -396,15 +372,14 @@ int main(){
     } 
   }
 
-  /*
-  for(size_t i = 0; i < ingredienti.len; ++i){
-    printf("%s |", ingredienti.ing[i]);
-  }
-  printf("\n");
-  */
-
   //stampa_albero(ricettario.root);
-  
+  /* 
+  for(size_t i = 0; i < magazzino.len; ++i){
+    rimuovi_scaduti(&magazzino.sez[i]);  
+  }
+  stampa_magazzino();
+  */ 
+
   dealloca_albero(ricettario.root, &dealloca_ricetta);
   dealloca_magazzino();
   dealloca_ordini(&pronti);
@@ -414,6 +389,12 @@ int main(){
   
   return 0; 
 
+}
+
+void stampa_magazzino(){
+  for(size_t i = 0; i < magazzino.len; ++i){
+    printf("Sezione %ld avanzano %d grammi.\n", i, magazzino.sez[i].qnt);
+  }
 }
 
 // Ritorna il numero dell'istruzione eseguita, se negativo allora si è verificato un problema nella relativa isturione
@@ -428,7 +409,7 @@ int esegui_input(Input inp){
 
   Nome istr;
   strcpy(istr, inp.tokens[0]);
-  
+
   if(strcmp(istr, "aggiungi_ricetta") == 0){
 
     Nome nome;
@@ -449,7 +430,7 @@ int esegui_input(Input inp){
   }
 
   else if(strcmp(istr, "rimuovi_ricetta") == 0){
-    
+
     Nome nome;
     strcpy(nome, inp.tokens[1]);
     if(!ricetta_in_coda(nome, pronti) && !ricetta_in_coda(nome, attesa)){
@@ -468,31 +449,47 @@ int esegui_input(Input inp){
   }
 
   else if(strcmp(istr, "rifornimento") == 0){
-   
-    for(size_t i = 1; i < inp.len; i += 3){
 
+    for(size_t i = 1; i < inp.len; i += 3){
       // vai a prendere l'id dell'ingrediente sapendo il Nome
       int ingId = aggiungi_ingrediente(inp.tokens[i]); 
 
       Ptr_lotto lt = malloc(sizeof(lotto_t));
-        lt->ingId = ingId;
-        lt->qnt = atoi(inp.tokens[i + 1]);
-        lt->scadenza = atoi(inp.tokens[i + 2]);
-        lt->next = NULL;
+      lt->ingId = ingId;
+      lt->qnt = atoi(inp.tokens[i + 1]);
+      lt->scadenza = atoi(inp.tokens[i + 2]);
+      lt->next = NULL;
 
       // vai a vedere la linked list corrispondente e aggiungi l'ingrediente in ordine 
       // di scadenza
       aggiungi_lotto(lt);
-      //printf("Lotto di \"%s\"(%ld) inserito correttamente.\n", inp.tokens[i], lt->ingId);
+      //printf("Lotto di \"%s\"(%ld) in qunatità %d inserito correttamente.\n", inp.tokens[i], lt->ingId, lt->qnt);
+    }
 
-      Ptr_ordine temp = attesa.buff;
-      while(temp != NULL){
-        if(ci_sono_ingr(temp->ord)){
-          //printf("Preparo l'ordine \"%s\".\n", temp->ord.nome);
-          prepara_ordine(&(temp->ord));
-          rimuovi_ordine_testa(&attesa);
+    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati
+    Ptr_ordine prec = NULL;
+    for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
+      if(ci_sono_ingr(corr->ord)){
+        prepara_ordine(corr->ord, true);
+
+        if(prec != NULL){
+          prec->next = corr->next;
+          free(corr);
+          corr = prec;
+
+          if(prec->next == NULL) attesa.sp = prec; 
+
+          corr = corr->next;
         }
-        temp = attesa.buff;
+        else{
+          rimuovi_testa_coda(&attesa);
+          corr = attesa.buff;
+          if(corr == NULL) break;
+          prec = NULL;
+        }
+      }
+      else{
+        corr = corr->next;
       }
     }
 
@@ -501,7 +498,7 @@ int esegui_input(Input inp){
   }
 
   else if(strcmp(istr, "ordine") == 0){
-    
+
     Ricetta * rc = cerca_ricetta(inp.tokens[1]);
     if(rc == NULL){
       //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
@@ -514,14 +511,13 @@ int esegui_input(Input inp){
       ord.rc = *rc;
       ord.qnt = atoi(inp.tokens[2]);
       ord.t = t;
-      
+
       if(ci_sono_ingr(ord)){
-        //printf("Preparo l'ordine \"%s\".\n", ord.nome);
-        prepara_ordine(&ord);
+        prepara_ordine(ord, false);
       }
       else{
         //printf("Ordine \"%s\" in attesa.\n", ord.nome);
-        aggiungi_ordine(ord, &attesa); 
+        aggiungi_ordine(ord, &attesa, false); 
       }
       printf("accettato\n");
       out = ORD;
@@ -532,7 +528,7 @@ int esegui_input(Input inp){
   else{
     out = END;
   }
-  
+
   dealloca_input(inp);
   return out;
 }
@@ -550,15 +546,7 @@ Ricetta * cerca_ricetta(Nome nome) {
 //  - "nome" nome della ricetta
 //  - "cr" lista di componenti della ricetta
 //
-// RITORNA:
-//  - 0 se aggiunta correttamente
-//  - 1 se la ricetta esiste già
 int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
-  
-  if(cerca_ricetta(nome) != NULL){
-    printf("[WAR] Ricetta già esistente\n");
-    return 1;
-  }
 
   Ricetta * rt = malloc(sizeof(Ricetta)); 
   if(rt == NULL) {
@@ -581,7 +569,7 @@ int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
 Input analizza_input(){
 
   Nome * tokens = NULL;
-  char input[COMMANDMAXLEN];
+  char input[COMMANDMAXLEN] = "";
   int unused = scanf(" %[^\n]", input);
   (void) unused;
 
@@ -610,7 +598,7 @@ Input analizza_input(){
   return out;
 }
 
-// Ritorna l'idice a cui a trovato o aggiunto l'ingrediente
+// Ritorna l'idice a cui ha trovato o aggiunto l'ingrediente
 int aggiungi_ingrediente(Nome ing){
   
   if(ingredienti.ing != NULL){
@@ -628,7 +616,14 @@ int aggiungi_ingrediente(Nome ing){
 
   ingredienti.len++;
 
-  return ingredienti.len - 1;
+  int id = ingredienti.len - 1; 
+
+  //Espando il magazzino
+  if(id >= (int) magazzino.len){
+    espandi_magazzino(id);
+  }
+
+  return id;
 }
 
 //Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
@@ -661,7 +656,7 @@ void dealloca_ricetta(Ricetta * rc){
 //  - 1 se non trovata
 int rimuovi_ricetta(Nome nome){
   Ptr_cella x = cerca_cella(ricettario.root, nome);
-
+  
   if(x != NULL){
     x = rimuovi_cella(&ricettario, x);
     dealloca_ricetta(x->ricetta);
@@ -701,7 +696,7 @@ Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt){
   Ptr_lotto temp, prec = NULL;
   for(temp = testaLt; temp != NULL; temp = temp->next){
 
-    printf("%d\n", temp->scadenza);
+   //printf("%d\n", temp->scadenza);
     if(lt->scadenza < temp->scadenza){
       lt->next = temp;
       if(prec != NULL){
@@ -779,10 +774,10 @@ Ptr_lotto dealloca_testa(Ptr_lotto testa){
 }
 
 void rimuovi_scaduti(Sezione * sez){
-  
+
   Ptr_lotto temp;
   for(temp = sez->lt; temp != NULL;){
-    if(temp->scadenza < t){
+    if(temp->scadenza <= t){
       sez->qnt -= temp->qnt;
       temp = dealloca_testa(temp);      
     } 
@@ -822,6 +817,7 @@ void preleva_ingredienti(Sezione * sez, int qnt){
     }
 
     if(left == 0){
+      sez->lt = temp;
       sez->qnt -= qnt;
       return;
     }
@@ -843,21 +839,51 @@ void aggiungi_ordine_in_coda(Ptr_ordine elem, Coda * cd){
   cd->sp = elem;
 }
 
-void aggiungi_ordine(Ordine ord, Coda * cd){
+void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
+  if(cd->buff == NULL){
+    cd->buff = elem;
+    cd->sp = elem;
+  }
+  else{
+    bool found = false;
+    Ptr_ordine prec = NULL;
+    for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
+      if(elem->ord.t < temp->ord.t){
+        if(prec == NULL){
+          elem->next = cd->buff;
+          cd->buff = elem;
+        }
+        else{
+          prec->next = elem;
+          elem->next = temp;
+        }
+        found = true;
+        break;
+      }
+      prec = temp;
+    }
+    if(!found){
+      cd->sp->next = elem;
+      cd->sp = elem;
+    }
+  }
+}
+
+void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
   Ptr_ordine p = malloc(sizeof(listaordini_t));
   p->ord = ord;
   p->next = NULL;
-
-  aggiungi_ordine_in_coda(p, cd);
+  if(rifornimento){
+    aggiungi_ordine_tempo(p, cd);
+  }
+  else aggiungi_ordine_in_coda(p, cd);
  
 }
 
 
-void prepara_ordine(Ordine * _ord){
+void prepara_ordine(Ordine ord, bool rifornimento){
   // Il check per vedere se ci sono gli ingredienti lo do per già fatto
   
-  Ordine ord = *_ord;
-
   int peso_tot = 0;
   for(size_t i = 0; i < ord.rc.len; ++i){
     int id = ord.rc.comp[i].ingId;
@@ -866,10 +892,9 @@ void prepara_ordine(Ordine * _ord){
     peso_tot += peso;
   }
 
-  _ord->peso = peso_tot;
+  ord.peso = peso_tot;
 
-  //printf("L'ordine \"%s\" è pronto.\n", ord.nome);
-  aggiungi_ordine(ord, &pronti);
+  aggiungi_ordine(ord, &pronti, rifornimento);
 
 }
 
@@ -907,7 +932,7 @@ void espandi_corriere(){
   corriere.len++;
 }
 
-void rimuovi_ordine_testa(Coda * cd){
+void rimuovi_testa_coda(Coda * cd){
   if(cd->buff == NULL) return;
   
   Ptr_ordine trash = cd->buff;
@@ -935,7 +960,7 @@ void sposta_ordini_corriere(){
       espandi_corriere();
       corriere.buff[idx] = temp->ord;
       left -= temp->ord.peso;
-      rimuovi_ordine_testa(&pronti);
+      rimuovi_testa_coda(&pronti);
       ++idx;
     }
     temp = pronti.buff;
@@ -944,17 +969,16 @@ void sposta_ordini_corriere(){
 
 void carica_corriere(){
   sposta_ordini_corriere();
-  int sorted[corriere.len];
-  stupidsort(sorted);
   
   if(corriere.len == 0) {
     printf("camioncino vuoto\n");
     return;
   }
 
+  sort_corriere();
+
   for(size_t i = 0; i < corriere.len; ++i){
-    int idx = sorted[i];
-    Ordine ord = corriere.buff[idx];
+    Ordine ord = corriere.buff[i];
     printf("%ld %s %d\n", ord.t, ord.nome, ord.qnt);
   }
 }

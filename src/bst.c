@@ -143,7 +143,7 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
   // Se la cella non ha sotto-alberi allora basta rimuoverla
   // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
   // andare a sostituire in z.
-  if(z->left == NULL && z->right == NULL){
+  if(z->left == NULL || z->right == NULL){
     rmv = z;
   }
   else{
