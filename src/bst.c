@@ -42,23 +42,6 @@ Ptr_cella init_cella(Nome k, Ricetta * rct){
   return out;
 }
 
-// Funzione di hash djb2
-unsigned long hash_djb2(Nome str) {
-    unsigned long hash = 5381;
-
-    for(size_t i = 0; str[i] != 0; i++){
-        hash = ((hash << 5) + hash) + str[i]; // hash * 33 + c
-    }
-
-    return hash;
-}
-
-/*
-  bool valore_minore(Nome k1, Nome k2){
-  return hash_djb2(k1) <= hash_djb2(k2);
-}
-*/
-
 
 //restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
 bool valore_minore(Nome k1, Nome k2){

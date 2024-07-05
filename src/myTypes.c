@@ -69,6 +69,8 @@ typedef struct{
   Ptr_ordine sp;   //Ultimo elemento
 } Coda;
 
+// buff = head, sp = tail
+
 typedef struct {
   int cap;
   size_t t;
@@ -76,6 +78,13 @@ typedef struct {
   size_t len;
 } Corriere;
 
+/* TODO: ->
+typedef struct{
+  Arena arena;
+  int cap;
+  size_t t;
+} Corriere;
+*/ 
 
 enum {
   AGG = 1,

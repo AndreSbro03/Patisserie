@@ -7,7 +7,7 @@
 #include "myTypes.c"
 #include "bst.c"
 
-#define COMMANDMAXLEN 1024
+#define COMMANDMAXLEN 100000
 
 Ricetta * cerca_ricetta(Nome nome);
 int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t len);
@@ -34,7 +34,7 @@ void prepara_ordine(Ordine ord, bool rifornimento);
 void dealloca_ordini(Coda * cd);
 bool ricetta_in_coda(Nome nome, Coda cd);
 void espandi_corriere();
-void rimuovi_testa_coda(Coda * cd);
+void dequeue(Coda * cd);
 void sposta_ordini_corriere();
 void carica_corriere();
 void ripristina_corriere();
@@ -230,16 +230,18 @@ int esegui_input(Input inp){
 
           if(prec->next == NULL) attesa.sp = prec; 
 
+          prec = corr;
           corr = corr->next;
         }
         else{
-          rimuovi_testa_coda(&attesa);
+          dequeue(&attesa);
           corr = attesa.buff;
           if(corr == NULL) break;
           prec = NULL;
         }
       }
       else{
+        prec = corr;
         corr = corr->next;
       }
     }
@@ -317,6 +319,7 @@ int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
 
 //Legge una riga di input di lunghezza massima COMMANDMAXLEN e ritorna uno struct contenente la quantità
 //di tokens e un puntatore all'array che li contiene
+#if 0
 Input analizza_input(){
 
   Nome * tokens = NULL;
@@ -348,6 +351,56 @@ Input analizza_input(){
   
   return out;
 }
+
+#else
+
+Input analizza_input(){
+
+  Nome * tokens = NULL;
+  int cont = 0;
+  bool endCommand = false;
+
+  while(!endCommand){
+  
+    Nome token = "";
+    bool endToken = false;
+
+    for(size_t idx = 0; !endToken; ++idx){
+
+      char x = getchar();
+
+      if(x == '\n' || x == EOF){
+        // COMMAND IS FINISH
+        endCommand = true;
+        x = ' ';
+      }      
+      if(x == ' '){
+        // TOKEN IS END
+        endToken = true;
+        x = '\0';
+      }
+      token[idx] = x;
+    }
+
+    tokens = realloc(tokens, sizeof(Nome) * (1 + cont));
+    if(tokens == NULL){
+      perror("Realloc failed!");
+      exit(EXIT_FAILURE);
+    }
+
+    strcpy(tokens[cont], token);
+    cont++;
+
+  }
+
+  Input out = {
+    .tokens = tokens,
+    .len = cont
+  };
+  
+  return out;
+}
+#endif
 
 // Ritorna l'idice a cui ha trovato o aggiunto l'ingrediente
 int aggiungi_ingrediente(Nome ing){
@@ -440,6 +493,7 @@ void espandi_magazzino(int ingId){
   magazzino.len = len;
 }
 
+
 Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt){
 
   if(testaLt == NULL) return lt;
@@ -458,7 +512,6 @@ Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt){
         return lt;
       }
     }
-
     prec = temp;
   }
 
@@ -484,14 +537,11 @@ void dealloca_lotti(Ptr_lotto testaLt){
 
   Ptr_lotto prec = NULL;
   for(Ptr_lotto temp = testaLt; temp != NULL; temp = temp->next){
-    
     if(prec != NULL) free(prec);
     prec = temp;
-
   }
 
   if(prec != NULL) free(prec);
-
 }
 
 void dealloca_magazzino(){
@@ -591,11 +641,7 @@ void aggiungi_ordine_in_coda(Ptr_ordine elem, Coda * cd){
 }
 
 void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
-  if(cd->buff == NULL){
-    cd->buff = elem;
-    cd->sp = elem;
-  }
-  else{
+
     bool found = false;
     Ptr_ordine prec = NULL;
     for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
@@ -614,10 +660,8 @@ void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
       prec = temp;
     }
     if(!found){
-      cd->sp->next = elem;
-      cd->sp = elem;
+      aggiungi_ordine_in_coda(elem, cd); 
     }
-  }
 }
 
 void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
@@ -673,6 +717,7 @@ bool ricetta_in_coda(Nome nome, Coda cd){
   return false;
 }
 
+//TODO: sostituisci questa funzione con una arena che accetti la nuova dimensione
 void espandi_corriere(){
 
   corriere.buff = realloc(corriere.buff, (corriere.len + 1) * sizeof(Ordine));
@@ -683,7 +728,7 @@ void espandi_corriere(){
   corriere.len++;
 }
 
-void rimuovi_testa_coda(Coda * cd){
+void dequeue(Coda * cd){
   if(cd->buff == NULL) return;
   
   Ptr_ordine trash = cd->buff;
@@ -701,16 +746,17 @@ void sposta_ordini_corriere(){
 
   size_t idx = 0;
   int left = corriere.cap;
-  
+ 
+  //TODO: ciclo con complessità (n+1)*(n/2) ~ O(n^2) da rivedere
   for(Ptr_ordine temp = pronti.buff; temp != NULL;){
     if(temp->ord.peso > left){
       break;
     }
     else{
-      espandi_corriere();
+      espandi_corriere(); 
       corriere.buff[idx] = temp->ord;
       left -= temp->ord.peso;
-      rimuovi_testa_coda(&pronti);
+      dequeue(&pronti);
       ++idx;
     }
     temp = pronti.buff;
@@ -738,4 +784,3 @@ void ripristina_corriere(){
   corriere.buff = NULL;
   corriere.len = 0;
 }
-
