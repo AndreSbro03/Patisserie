@@ -1,0 +1,680 @@
+desc: (none)
+cmd: ./build/App
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=47268217
+mem_heap_B=1396728
+mem_heap_extra_B=268448
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=139630937
+mem_heap_B=2155776
+mem_heap_extra_B=654184
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=246973088
+mem_heap_B=2759080
+mem_heap_extra_B=1007032
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=309490172
+mem_heap_B=3093272
+mem_heap_extra_B=1180992
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=414707779
+mem_heap_B=3584840
+mem_heap_extra_B=1448456
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=473284073
+mem_heap_B=3882272
+mem_heap_extra_B=1583256
+mem_stacks_B=0
+heap_tree=detailed
+n6: 3882272 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2333760 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 2333760 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 583168 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 583168 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n3: 556992 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 224640 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 224640 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 176256 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 176256 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 156096 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 156096 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 74416 in 7 places, all below massif's threshold (1.00%)
+ n1: 60624 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 60624 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 60624 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+#-----------
+snapshot=7
+#-----------
+time=556409417
+mem_heap_B=4168680
+mem_heap_extra_B=1720128
+mem_stacks_B=0
+heap_tree=detailed
+n6: 4168680 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2534184 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 2534184 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n3: 663264 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 281376 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 281376 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 192672 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 192672 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 189216 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 189216 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 553984 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 553984 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 78064 in 7 places, all below massif's threshold (1.00%)
+ n1: 65872 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 65872 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 65872 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+#-----------
+snapshot=8
+#-----------
+time=630614531
+mem_heap_B=4050576
+mem_heap_extra_B=1842080
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=678196589
+mem_heap_B=4621488
+mem_heap_extra_B=1951256
+mem_stacks_B=0
+heap_tree=detailed
+n6: 4621488 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2874504 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 2874504 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n3: 802080 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 362592 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 362592 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 220608 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 220608 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 218880 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 218880 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 514048 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 514048 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 82928 in 7 places, all below massif's threshold (1.00%)
+ n1: 74616 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 74616 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 74616 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+#-----------
+snapshot=10
+#-----------
+time=779464696
+mem_heap_B=4507328
+mem_heap_extra_B=2130448
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=843727445
+mem_heap_B=5236936
+mem_heap_extra_B=2232224
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=915619658
+mem_heap_B=5013792
+mem_heap_extra_B=2336856
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=1006953349
+mem_heap_B=5335712
+mem_heap_extra_B=2446032
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=1076360959
+mem_heap_B=5924864
+mem_heap_extra_B=2534376
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=1143811355
+mem_heap_B=6108280
+mem_heap_extra_B=2626304
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=1236742240
+mem_heap_B=6375992
+mem_heap_extra_B=2712944
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=1307321916
+mem_heap_B=6533624
+mem_heap_extra_B=2768712
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=1365031498
+mem_heap_B=6640832
+mem_heap_extra_B=2803568
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=1441436414
+mem_heap_B=6806240
+mem_heap_extra_B=2865640
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=1495281722
+mem_heap_B=6709536
+mem_heap_extra_B=2885112
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=1570025256
+mem_heap_B=7021152
+mem_heap_extra_B=2915400
+mem_stacks_B=0
+heap_tree=detailed
+n6: 7021152 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4272984 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 4272984 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n3: 1793376 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 932256 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 932256 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 449280 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 449280 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 411840 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 411840 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 387328 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 387328 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 158920 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 158920 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 158920 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 135232 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=22
+#-----------
+time=1618342040
+mem_heap_B=7109264
+mem_heap_extra_B=2946320
+mem_stacks_B=0
+heap_tree=detailed
+n6: 7109264 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4317168 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 4317168 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n3: 1839456 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 957600 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 957600 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 460224 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 460224 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 421632 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 421632 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 378112 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 378112 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 163552 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 163552 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 163552 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 137664 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=23
+#-----------
+time=1699765422
+mem_heap_B=7238208
+mem_heap_extra_B=2977400
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=1808736886
+mem_heap_B=7248416
+mem_heap_extra_B=2911616
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=1881465650
+mem_heap_B=7293456
+mem_heap_extra_B=2882888
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=1938285195
+mem_heap_B=7379888
+mem_heap_extra_B=2881832
+mem_stacks_B=0
+heap_tree=peak
+n7: 7379888 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4202520 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 4202520 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n3: 2221344 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 1146816 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 1146816 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 597312 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 597312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 477216 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 477216 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n2: 315136 0x109DFF: analizza_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 315136 0x109227: main (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 205288 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 205288 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 205288 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 119808 0x10AB2B: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 119808 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 42480 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=27
+#-----------
+time=1992814721
+mem_heap_B=7362080
+mem_heap_extra_B=2848272
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=2065581282
+mem_heap_B=7384776
+mem_heap_extra_B=2801464
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=2138227868
+mem_heap_B=7380008
+mem_heap_extra_B=2752920
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=2210865760
+mem_heap_B=7343528
+mem_heap_extra_B=2654360
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=2283549484
+mem_heap_B=7351024
+mem_heap_extra_B=2605096
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=2397450676
+mem_heap_B=7210448
+mem_heap_extra_B=2428208
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=2516188669
+mem_heap_B=7123464
+mem_heap_extra_B=2302568
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=2605441550
+mem_heap_B=6962200
+mem_heap_extra_B=2114152
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=2664796005
+mem_heap_B=6911768
+mem_heap_extra_B=2038296
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=2753851356
+mem_heap_B=6664888
+mem_heap_extra_B=1799384
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=2842875807
+mem_heap_B=6603144
+mem_heap_extra_B=1683760
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=2931990716
+mem_heap_B=6482680
+mem_heap_extra_B=1512504
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=3021094689
+mem_heap_B=6400736
+mem_heap_extra_B=1392064
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=3139908215
+mem_heap_B=6264048
+mem_heap_extra_B=1190464
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=3229124795
+mem_heap_B=6165240
+mem_heap_extra_B=1050624
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=3288495607
+mem_heap_B=6163296
+mem_heap_extra_B=1006800
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=3348211308
+mem_heap_B=5977648
+mem_heap_extra_B=909600
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=3437787319
+mem_heap_B=6080960
+mem_heap_extra_B=828888
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=3497215406
+mem_heap_B=6037368
+mem_heap_extra_B=744920
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=3616073292
+mem_heap_B=6030704
+mem_heap_extra_B=644856
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=3675770664
+mem_heap_B=6038856
+mem_heap_extra_B=600792
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=3735342811
+mem_heap_B=5960248
+mem_heap_extra_B=577152
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=3825510443
+mem_heap_B=6072912
+mem_heap_extra_B=523928
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=3873557245
+mem_heap_B=6069088
+mem_heap_extra_B=504920
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=3920826813
+mem_heap_B=6015928
+mem_heap_extra_B=473712
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=3968876418
+mem_heap_B=6110280
+mem_heap_extra_B=451872
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=4016146741
+mem_heap_B=6120632
+mem_heap_extra_B=442040
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=4063653291
+mem_heap_B=6148184
+mem_heap_extra_B=411664
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=4111151898
+mem_heap_B=6148136
+mem_heap_extra_B=375208
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=4158420495
+mem_heap_B=6125344
+mem_heap_extra_B=346424
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=57
+#-----------
+time=4205688716
+mem_heap_B=6172288
+mem_heap_extra_B=317384
+mem_stacks_B=0
+heap_tree=detailed
+n6: 6172288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n3: 4917312 0x10A5F4: aggiungi_ordine (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 2153376 0x10A931: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 2153376 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 2071296 0x10ACDF: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 2071296 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 692640 0x10AADD: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 692640 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 433840 0x10A036: input_to_comp_ricetta (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 433840 0x10AB12: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 433840 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 273312 0x109FB8: aggiungi_ingrediente (in /home/admin/Desktop/API/progetto/build/App)
+  n1: 273312 0x10A863: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+   n0: 273312 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 255744 0x10AB2B: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 255744 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n1: 230016 0x10A870: esegui_input (in /home/admin/Desktop/API/progetto/build/App)
+  n0: 230016 0x109232: main (in /home/admin/Desktop/API/progetto/build/App)
+ n0: 62064 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=58
+#-----------
+time=4252963492
+mem_heap_B=6247288
+mem_heap_extra_B=293360
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=59
+#-----------
+time=4300234185
+mem_heap_B=6278928
+mem_heap_extra_B=272968
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=60
+#-----------
+time=4347524949
+mem_heap_B=6312592
+mem_heap_extra_B=263568
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=4394944325
+mem_heap_B=6374400
+mem_heap_extra_B=239984
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=62
+#-----------
+time=4442222162
+mem_heap_B=6417296
+mem_heap_extra_B=231392
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=4490327545
+mem_heap_B=6483208
+mem_heap_extra_B=214024
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=64
+#-----------
+time=4537597841
+mem_heap_B=6561608
+mem_heap_extra_B=205384
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=65
+#-----------
+time=4584868484
+mem_heap_B=6702216
+mem_heap_extra_B=195096
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=66
+#-----------
+time=4632490497
+mem_heap_B=6870336
+mem_heap_extra_B=196320
+mem_stacks_B=0
+heap_tree=empty

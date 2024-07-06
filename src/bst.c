@@ -12,7 +12,7 @@
 
 typedef struct Cella{
   Nome key;
-  Ricetta * ricetta;
+  int id;
 
   struct Cella * p;
   struct Cella * left;
@@ -32,10 +32,10 @@ Ptr_cella alloca_cella(){
   return out;
 }
 
-Ptr_cella init_cella(Nome k, Ricetta * rct){
+Ptr_cella init_cella(Nome k, int id){
   Ptr_cella out = alloca_cella();
   strcpy(out->key, k);
-  out->ricetta = rct;
+  out->id = id;
   out->p = NULL;
   out->left = NULL;
   out->right = NULL;
@@ -162,23 +162,23 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
 
   // Faccio uno swap dei dati perchè sennò potrei avere problemi con una successiva free
   if(rmv != z){
-    Ricetta * t;
+    int t;
     strcpy(z->key,rmv->key);
-    t = z->ricetta;
-    z->ricetta = rmv->ricetta;
-    rmv->ricetta = t;
+    t = z->id;
+    z->id = rmv->id;
+    rmv->id = t;
   }
 
   return rmv;
 }
 
-void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (Ricetta *)){
+void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
 
   if(x != NULL){
     dealloca_albero(x->left, dealloca_dati);
     dealloca_albero(x->right, dealloca_dati);
     //printf("Ho liberato <%s>!\n", x->key);
-    if(dealloca_dati != NULL) (*dealloca_dati)(x->ricetta);
+    if(dealloca_dati != NULL) (*dealloca_dati)(x->id);
     free(x);
   }
 }

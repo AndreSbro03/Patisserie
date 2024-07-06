@@ -15,9 +15,15 @@ typedef struct {
 } CompRicetta;
  
 typedef struct {
+  Nome nome;
   CompRicetta * comp;
   size_t len;
 } Ricetta;
+
+typedef struct {
+  Ricetta * rts;
+  size_t len;
+} Ricettario;
 
 typedef struct Lotto{
   size_t ingId;
@@ -50,8 +56,9 @@ typedef struct {
 } Ingredienti;
 
 typedef struct {
-  Nome nome;
-  Ricetta rc;
+  //Nome nome;
+  //TODO: ricontrolla che forse era meglio con la ricetta già salvata
+  int rcId; //Id della ricetta
   int qnt;
   int peso;
   size_t t;

@@ -7,50 +7,55 @@
 #include "myTypes.c"
 #include "bst.c"
 
-#define COMMANDMAXLEN 100000
-
-Ricetta * cerca_ricetta(Nome nome);
-int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t len);
+// GESTIONE INPUT 
 Input analizza_input();
 int esegui_input(Input inp);
 CompRicetta * input_to_comp_ricetta(Input inp, size_t * len);
-void dealloca_ricetta(Ricetta * rc);
+void dealloca_input(Input inp);
+
+// GESTIONE RICETTARIO
+int cerca_ricetta(Nome nome);
+void aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t len);
+void dealloca_ricetta(int id);
 int rimuovi_ricetta(Nome nome);
+void ricettario_push(Ricetta rt);
+
+// GESTIONE INGREDIENTI 
+int aggiungi_ingrediente(Nome ing);
+bool ci_sono_ingr(Ordine ord);
+
+// GESTIONE MAGAZZINO
 void espandi_magazzino(int ingId);
 Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt);
 void aggiungi_lotto(Ptr_lotto lt);
 void dealloca_lotti(Ptr_lotto testaLt);
 void dealloca_magazzino();
-int aggiungi_ingrediente(Nome ing);
-void dealloca_input(Input inp);
-void init_corriere(Input inp);
 void rimuovi_scaduti(Sezione * sez);
-bool ci_sono_ingr(Ordine ord);
 Ptr_lotto dealloca_testa(Ptr_lotto testa);
 void preleva_ingredienti(Sezione * sez, int qnt);
+void stampa_magazzino();
+
+//GESTIONE CORRIERE
+void init_corriere(Input inp);
 void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento);
-void aggiungi_ordine_in_coda(Ptr_ordine elem, Coda * cd);
+void enqueue(Ptr_ordine elem, Coda * cd);
 void prepara_ordine(Ordine ord, bool rifornimento);
 void dealloca_ordini(Coda * cd);
-bool ricetta_in_coda(Nome nome, Coda cd);
+bool ricetta_in_coda(int id, Coda cd);
 void espandi_corriere();
 void dequeue(Coda * cd);
 void sposta_ordini_corriere();
 void carica_corriere();
 void ripristina_corriere();
-void stampa_magazzino();
 
 int t = 0;
 bool end_program = false;
 
-Albero ricettario = {
-  .root = NULL
-};
+Albero idxRicettario = {.root = NULL};
+Ricettario ricettario = {.rts = NULL, .len = 0};
 
-Ingredienti ingredienti = {
-  .ing = NULL,
-  .len = 0
-};
+Albero ingredienti = {.root = NULL};
+int maxId = -1;
 
 Magazzino magazzino = {
   .sez = NULL,
@@ -85,13 +90,6 @@ void sort_corriere() {
   insertion_sort();
 }
 
-void printLL(Ptr_ordine testa){
-  for(Ptr_ordine temp = testa; temp != NULL; temp = temp->next){
-    printf("%s %d -|", temp->ord.nome, temp->ord.peso);
-  } 
-  printf("\n");
-}
-
 int main(){
 
   Input input = analizza_input();
@@ -109,34 +107,19 @@ int main(){
     input = analizza_input();
     int istr = esegui_input(input);
    
-    /*
-    printf("pronti: \n");
-    printLL(pronti.buff);
-    printf("attesa: \n");
-    printLL(attesa.buff);
-    */
-
     if(istr == END) end_program = true;
     else{
-      //printf("%d\n", istr);
       t++;
     } 
   }
 
-  //stampa_albero(ricettario.root);
-  /* 
-  for(size_t i = 0; i < magazzino.len; ++i){
-    rimuovi_scaduti(&magazzino.sez[i]);  
-  }
-  stampa_magazzino();
-  */ 
-
-  dealloca_albero(ricettario.root, &dealloca_ricetta);
+  dealloca_albero(idxRicettario.root, &dealloca_ricetta);
+  dealloca_albero(ingredienti.root, NULL);
   dealloca_magazzino();
   dealloca_ordini(&pronti);
   dealloca_ordini(&attesa);
 
-  free(ingredienti.ing);
+  free(ricettario.rts);
   
   return 0; 
 
@@ -166,7 +149,7 @@ int esegui_input(Input inp){
     Nome nome;
     strcpy(nome, inp.tokens[1]);
 
-    if(cerca_ricetta(nome) != NULL){
+    if(cerca_ricetta(nome) >= 0){
       //printf("Esiste già una ricetta chiamata \"%s\".\n", nome);
       printf("ignorato\n");
       out = -AGG;
@@ -182,20 +165,24 @@ int esegui_input(Input inp){
 
   else if(strcmp(istr, "rimuovi_ricetta") == 0){
 
-    Nome nome;
-    strcpy(nome, inp.tokens[1]);
-    if(!ricetta_in_coda(nome, pronti) && !ricetta_in_coda(nome, attesa)){
-      if(rimuovi_ricetta(nome) == 0){
-        printf("rimossa\n");
+    //strcpy(nome, inp.tokens[1]);
+    Ptr_cella x = cerca_cella(idxRicettario.root, inp.tokens[1]);
+    
+    if(x == NULL){
+      printf("non presente\n");
+    }
+    else{
+      if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
+        printf("ordini in sospeso\n");
       }
       else{
-        printf("non presente\n");
+        x = rimuovi_cella(&idxRicettario, x);
+        dealloca_ricetta(x->id);
+        free(x);
+        printf("rimossa\n");
       }
     }
-    else {
-      //printf("Impossibile rimuovere la ricetta \"%s\" in coda.\n", nome);
-      printf("ordini in sospeso\n");
-    }
+
     out = RMV;
   }
 
@@ -252,16 +239,16 @@ int esegui_input(Input inp){
 
   else if(strcmp(istr, "ordine") == 0){
 
-    Ricetta * rc = cerca_ricetta(inp.tokens[1]);
-    if(rc == NULL){
+    int rcId = cerca_ricetta(inp.tokens[1]);
+    if(rcId < 0){
       //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
       printf("rifiutato\n");
       out = -ORD;
     }
     else{
       Ordine ord;
-      strcpy(ord.nome, inp.tokens[1]);
-      ord.rc = *rc;
+      //strcpy(ord.nome, inp.tokens[1]);
+      ord.rcId = rcId;
       ord.qnt = atoi(inp.tokens[2]);
       ord.t = t;
 
@@ -287,10 +274,22 @@ int esegui_input(Input inp){
 }
 
 
-Ricetta * cerca_ricetta(Nome nome) {
-  Ptr_cella cl = cerca_cella(ricettario.root, nome);
-  if(cl == NULL) return NULL;
-  return cl->ricetta;
+int cerca_ricetta(Nome nome) {
+  Ptr_cella cl = cerca_cella(idxRicettario.root, nome);
+  if(cl == NULL) return -1;
+  return cl->id;
+}
+
+void ricettario_push(Ricetta rt){
+  ricettario.rts = realloc(ricettario.rts, (ricettario.len + 1) * sizeof(Ricetta));
+  if(ricettario.rts == NULL){
+    perror("Fallita malloc in ricettario_push!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  memcpy(&ricettario.rts[ricettario.len], &rt, sizeof(Ricetta));
+
+  ricettario.len += 1;
 }
 
 // Controlla se la ricetta esiste già, se no la aggiunge al ricettario
@@ -299,61 +298,22 @@ Ricetta * cerca_ricetta(Nome nome) {
 //  - "nome" nome della ricetta
 //  - "cr" lista di componenti della ricetta
 //
-int aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
+void aggiungi_ricetta(Nome nome, CompRicetta * cr, size_t dim){
 
-  Ricetta * rt = malloc(sizeof(Ricetta)); 
-  if(rt == NULL) {
-    perror("Buy more ram lol!\n");
-    exit(EXIT_FAILURE);
-  }
+  Ricetta rt;
+  rt.comp = cr;
+  rt.len = dim;
+  strcpy(rt.nome, nome);
 
-  rt->comp = cr;
-  rt->len = dim;
-
-  aggiungi_cella(&ricettario, init_cella(nome, rt));
+  aggiungi_cella(&idxRicettario, init_cella(nome, ricettario.len));
+  ricettario_push(rt);
 
   //printf("Ricetta \"%s\" aggiunta correttamente.\n", nome);
-
-  return 0;  
 }
 
 //Legge una riga di input di lunghezza massima COMMANDMAXLEN e ritorna uno struct contenente la quantità
 //di tokens e un puntatore all'array che li contiene
-#if 0
-Input analizza_input(){
-
-  Nome * tokens = NULL;
-  char input[COMMANDMAXLEN] = "";
-  int unused = scanf(" %[^\n]", input);
-  (void) unused;
-
-  char * tk = strtok(input, " ");
-  int cont = 0;
-
-  while(tk != NULL && strcmp(tk, "\n") != 0){
-    tokens = realloc(tokens, sizeof(Nome) * (1 + cont));
-    if(tokens == NULL){
-      perror("Realloc failed!");
-      exit(EXIT_FAILURE);
-    }
-
-    strcpy(tokens[cont], strcat(tk,"\0"));
-
-    cont++;
-    tk = strtok(NULL, " ");
-
-  }
-
-  Input out = {
-    .tokens = tokens,
-    .len = cont
-  };
-  
-  return out;
-}
-
-#else
-
+//TODO: output come linked list
 Input analizza_input(){
 
   Nome * tokens = NULL;
@@ -400,35 +360,26 @@ Input analizza_input(){
   
   return out;
 }
-#endif
 
 // Ritorna l'idice a cui ha trovato o aggiunto l'ingrediente
 int aggiungi_ingrediente(Nome ing){
-  
-  if(ingredienti.ing != NULL){
-    for(size_t i = 0; i < ingredienti.len; ++i){
-      if(strcmp(ingredienti.ing[i], ing) == 0) return i; // ingrediente già esistente
+
+  Ptr_cella x = cerca_cella(ingredienti.root, ing);
+
+  if(x == NULL){
+    maxId += 1;
+    aggiungi_cella(&ingredienti, init_cella(ing, maxId));
+
+    //Espando il magazzino
+    if(maxId >= (int) magazzino.len){
+      espandi_magazzino(maxId);
     }
+
+    return maxId;
   }
-  else {
-    ingredienti.ing = malloc(sizeof(Nome));
-    ingredienti.len = 0;
-  }
-
-  ingredienti.ing = realloc(ingredienti.ing, sizeof(Nome) * (ingredienti.len + 1));
-  strcpy(ingredienti.ing[ingredienti.len], ing);
-
-  ingredienti.len++;
-
-  int id = ingredienti.len - 1; 
-
-  //Espando il magazzino
-  if(id >= (int) magazzino.len){
-    espandi_magazzino(id);
-  }
-
-  return id;
+  else return x->id;
 }
+
 
 //Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
 //e ritorna un array di componenti della ricetta
@@ -451,19 +402,19 @@ CompRicetta * input_to_comp_ricetta(Input inp, size_t * dim){
   return comp;
 }
 
-void dealloca_ricetta(Ricetta * rc){
-    free(rc->comp);
-    free(rc);
+void dealloca_ricetta(int id){
+  
+  free(ricettario.rts[id].comp);
 }
 
 // Rimuove la ricetta se la trova
 //  - 1 se non trovata
 int rimuovi_ricetta(Nome nome){
-  Ptr_cella x = cerca_cella(ricettario.root, nome);
+  Ptr_cella x = cerca_cella(idxRicettario.root, nome);
   
   if(x != NULL){
-    x = rimuovi_cella(&ricettario, x);
-    dealloca_ricetta(x->ricetta);
+    x = rimuovi_cella(&idxRicettario, x);
+    dealloca_ricetta(x->id);
     free(x);
     return 0;
   }
@@ -588,15 +539,16 @@ void rimuovi_scaduti(Sezione * sez){
 }
 
 bool ci_sono_ingr(Ordine ord){
-  
-  for(size_t i = 0; i < ord.rc.len; ++i){
-    size_t id = ord.rc.comp[i].ingId;
+ 
+  Ricetta rc = ricettario.rts[ord.rcId];
+  for(size_t i = 0; i < rc.len; ++i){
+    size_t id = rc.comp[i].ingId;
 
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
     rimuovi_scaduti(&magazzino.sez[id]);
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(magazzino.sez[id].qnt < (ord.rc.comp[i].qnt * ord.qnt)) return false;
+    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return false;
   }
 
   return true;
@@ -630,7 +582,7 @@ void preleva_ingredienti(Sezione * sez, int qnt){
   return;
 }
 
-void aggiungi_ordine_in_coda(Ptr_ordine elem, Coda * cd){
+void enqueue(Ptr_ordine elem, Coda * cd){
   if(cd->buff == NULL){
     cd->buff = elem;
   }
@@ -660,7 +612,7 @@ void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
       prec = temp;
     }
     if(!found){
-      aggiungi_ordine_in_coda(elem, cd); 
+      enqueue(elem, cd); 
     }
 }
 
@@ -671,18 +623,18 @@ void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
   if(rifornimento){
     aggiungi_ordine_tempo(p, cd);
   }
-  else aggiungi_ordine_in_coda(p, cd);
+  else enqueue(p, cd);
  
 }
 
 
 void prepara_ordine(Ordine ord, bool rifornimento){
   // Il check per vedere se ci sono gli ingredienti lo do per già fatto
-  
+  Ricetta rc = ricettario.rts[ord.rcId]; 
   int peso_tot = 0;
-  for(size_t i = 0; i < ord.rc.len; ++i){
-    int id = ord.rc.comp[i].ingId;
-    int peso = ord.rc.comp[i].qnt * ord.qnt; 
+  for(size_t i = 0; i < rc.len; ++i){
+    int id = rc.comp[i].ingId;
+    int peso = rc.comp[i].qnt * ord.qnt; 
     preleva_ingredienti(&magazzino.sez[id], peso); 
     peso_tot += peso;
   }
@@ -710,9 +662,9 @@ void dealloca_ordini(Coda * cd){
   cd->sp = NULL;
 }
 
-bool ricetta_in_coda(Nome nome, Coda cd){
+bool ricetta_in_coda(int id, Coda cd){
   for(Ptr_ordine temp = cd.buff; temp != NULL; temp = temp->next){
-    if(strcmp(temp->ord.nome, nome) == 0) return true;
+    if(temp->ord.rcId == id) return true;
   }
   return false;
 }
@@ -775,7 +727,7 @@ void carica_corriere(){
 
   for(size_t i = 0; i < corriere.len; ++i){
     Ordine ord = corriere.buff[i];
-    printf("%ld %s %d\n", ord.t, ord.nome, ord.qnt);
+    printf("%ld %s %d\n", ord.t, ricettario.rts[ord.rcId].nome, ord.qnt);
   }
 }
 
