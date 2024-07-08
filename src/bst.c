@@ -11,7 +11,7 @@
 #endif
 
 typedef struct Cella{
-  Nome key;
+  char * key;
   int id;
 
   struct Cella * p;
@@ -32,9 +32,10 @@ Ptr_cella alloca_cella(){
   return out;
 }
 
-Ptr_cella init_cella(Nome k, int id){
+//Lunghezza tenendo conto il carattere terminatore
+Ptr_cella init_cella(char * k, int id){
   Ptr_cella out = alloca_cella();
-  strcpy(out->key, k);
+  out->key = k;
   out->id = id;
   out->p = NULL;
   out->left = NULL;
@@ -44,7 +45,7 @@ Ptr_cella init_cella(Nome k, int id){
 
 
 //restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
-bool valore_minore(Nome k1, Nome k2){
+bool valore_minore(char * k1, char * k2){
   
   int i = 0;
   while(k1[i] != '\0'){
@@ -58,7 +59,7 @@ bool valore_minore(Nome k1, Nome k2){
 }
 
 //Cerco la cella contenente una certa chiave nell'albero, se non la trovo ritrono NULL
-Ptr_cella cerca_cella(Ptr_cella cl, Nome k){
+Ptr_cella cerca_cella(Ptr_cella cl, char * k){
   if(cl == NULL || strcmp(k, cl -> key) == 0) return cl;
 
   if(valore_minore(k, cl->key)) 
@@ -162,13 +163,16 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
 
   // Faccio uno swap dei dati perchè sennò potrei avere problemi con una successiva free
   if(rmv != z){
-    int t;
-    strcpy(z->key,rmv->key);
-    t = z->id;
+    char * rmvKey = rmv->key;
+    rmv->key = z->key;
+    z->key = rmvKey;
+
+    int t = z->id;
     z->id = rmv->id;
     rmv->id = t;
   }
 
+  free(rmv->key);
   return rmv;
 }
 
@@ -179,6 +183,7 @@ void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
     dealloca_albero(x->right, dealloca_dati);
     //printf("Ho liberato <%s>!\n", x->key);
     if(dealloca_dati != NULL) (*dealloca_dati)(x->id);
+    free(x->key);
     free(x);
   }
 }

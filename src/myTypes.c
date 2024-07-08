@@ -1,5 +1,7 @@
 #define STRMAXLEN 255 + 1
 
+typedef unsigned int uint;
+
 typedef struct Nodo{
   int val;
   struct Nodo * next;
@@ -10,7 +12,7 @@ typedef nodo_t * Ptr_nodo;
 typedef char Nome[STRMAXLEN];
 
 typedef struct Token{
-  Nome tk; 
+  char * tk; 
   struct Token * next;
 
 } token_t;
@@ -20,7 +22,7 @@ typedef token_t * Ptr_token;
 typedef struct {
   Ptr_token head;
   Ptr_token tail;
-  size_t len;
+  uint len;
 } Input;
 
 typedef struct {  
@@ -29,14 +31,14 @@ typedef struct {
 } CompRicetta;
  
 typedef struct {
-  Nome nome;
+  char * nome;
   CompRicetta * comp;
-  size_t len;
+  uint len;
 } Ricetta;
 
 typedef struct {
   Ricetta * rts;
-  size_t len;
+  uint len;
 } Ricettario;
 
 typedef struct Lotto{
@@ -50,9 +52,9 @@ typedef lotto_t * Ptr_lotto;
 
 typedef struct {
   Ptr_lotto lt;
-  Nome nomeIng;
-  size_t ingId;
-  size_t usedBy; // Numero di ricette che hanno come componente questo ingrediente
+  char * nomeIng;
+  uint ingId;
+  //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
 } Sezione;
 
@@ -62,16 +64,15 @@ typedef struct {
 
 typedef struct {
   Sezione * sez;
-  size_t len;
+  uint len;
 } Magazzino;
 
 typedef struct {
-  //Nome nome;
   //TODO: ricontrolla che forse era meglio con la ricetta già salvata
   int rcId; //Id della ricetta
   int qnt;
   int peso;
-  size_t t;
+  uint t;
 } Ordine;
 
 typedef struct ListaOrdini{
@@ -90,9 +91,9 @@ typedef struct{
 
 typedef struct {
   int cap;
-  size_t t;
+  uint t;
   Ordine * buff;
-  size_t len;
+  uint len;
 } Corriere;
 
 enum {
