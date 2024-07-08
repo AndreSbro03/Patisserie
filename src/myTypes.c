@@ -1,13 +1,27 @@
 #define STRMAXLEN 255 + 1
 
+typedef struct Nodo{
+  int val;
+  struct Nodo * next;
+} nodo_t;
+
+typedef nodo_t * Ptr_nodo;
+
 typedef char Nome[STRMAXLEN];
 
+typedef struct Token{
+  Nome tk; 
+  struct Token * next;
+
+} token_t;
+
+typedef token_t * Ptr_token;
+
 typedef struct {
-  Nome * tokens;
+  Ptr_token head;
+  Ptr_token tail;
   size_t len;
 } Input;
-
-typedef Nome Ingrediente;
 
 typedef struct {  
   int ingId;
@@ -26,10 +40,8 @@ typedef struct {
 } Ricettario;
 
 typedef struct Lotto{
-  size_t ingId;
   int qnt;
   int scadenza;
-  
   struct Lotto * next;
 
 } lotto_t;
@@ -38,6 +50,9 @@ typedef lotto_t * Ptr_lotto;
 
 typedef struct {
   Ptr_lotto lt;
+  Nome nomeIng;
+  size_t ingId;
+  size_t usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
 } Sezione;
 
@@ -49,11 +64,6 @@ typedef struct {
   Sezione * sez;
   size_t len;
 } Magazzino;
-
-typedef struct {
-  Nome * ing;
-  size_t len;
-} Ingredienti;
 
 typedef struct {
   //Nome nome;
@@ -84,14 +94,6 @@ typedef struct {
   Ordine * buff;
   size_t len;
 } Corriere;
-
-/* TODO: ->
-typedef struct{
-  Arena arena;
-  int cap;
-  size_t t;
-} Corriere;
-*/ 
 
 enum {
   AGG = 1,

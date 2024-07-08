@@ -1,0 +1,1087 @@
+desc: (none)
+cmd: ./build/App
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=193785315
+mem_heap_B=2121152
+mem_heap_extra_B=137368
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=388915731
+mem_heap_B=3235064
+mem_heap_extra_B=211520
+mem_stacks_B=0
+heap_tree=detailed
+n5: 3235064 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1270080 0x109D94: alloca_cella (bst.c:31)
+  n1: 1270080 0x109D94: init_cella (bst.c:36)
+   n1: 1270080 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 1270080 0x10B3F6: esegui_input (main.c:173)
+     n0: 1270080 0x109237: main (main.c:121)
+ n1: 1199520 0x109CD4: ricettario_push (main.c:295)
+  n1: 1199520 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 1199520 0x10B3F6: esegui_input (main.c:173)
+    n0: 1199520 0x109237: main (main.c:121)
+ n2: 485632 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 483520 0x10B4FA: esegui_input (main.c:268)
+   n0: 483520 0x109237: main (main.c:121)
+  n0: 2112 in 2 places, all below massif's threshold (1.00%)
+ n1: 263240 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 263240 0x10B3D6: esegui_input (main.c:172)
+   n0: 263240 0x109237: main (main.c:121)
+ n0: 16592 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=3
+#-----------
+time=588831716
+mem_heap_B=4136504
+mem_heap_extra_B=274208
+mem_stacks_B=0
+heap_tree=detailed
+n5: 4136504 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1616544 0x109D94: alloca_cella (bst.c:31)
+  n1: 1616544 0x109D94: init_cella (bst.c:36)
+   n1: 1616544 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 1616544 0x10B3F6: esegui_input (main.c:173)
+     n0: 1616544 0x109237: main (main.c:121)
+ n1: 1526736 0x109CD4: ricettario_push (main.c:295)
+  n1: 1526736 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 1526736 0x10B3F6: esegui_input (main.c:173)
+    n0: 1526736 0x109237: main (main.c:121)
+ n2: 638208 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 636832 0x10B4FA: esegui_input (main.c:268)
+   n0: 636832 0x109237: main (main.c:121)
+  n0: 1376 in 2 places, all below massif's threshold (1.00%)
+ n1: 335472 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 335472 0x10B3D6: esegui_input (main.c:172)
+   n0: 335472 0x109237: main (main.c:121)
+ n0: 19544 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=4
+#-----------
+time=832414542
+mem_heap_B=4990040
+mem_heap_extra_B=330624
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=1035933769
+mem_heap_B=5582400
+mem_heap_extra_B=371224
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=1166631899
+mem_heap_B=5916336
+mem_heap_extra_B=393640
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=1317936652
+mem_heap_B=6272504
+mem_heap_extra_B=416144
+mem_stacks_B=0
+heap_tree=detailed
+n5: 6272504 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2454624 0x109D94: alloca_cella (bst.c:31)
+  n1: 2454624 0x109D94: init_cella (bst.c:36)
+   n1: 2454624 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 2454624 0x10B3F6: esegui_input (main.c:173)
+     n0: 2454624 0x109237: main (main.c:121)
+ n1: 2318256 0x109CD4: ricettario_push (main.c:295)
+  n1: 2318256 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 2318256 0x10B3F6: esegui_input (main.c:173)
+    n0: 2318256 0x109237: main (main.c:121)
+ n2: 973056 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 971616 0x10B4FA: esegui_input (main.c:268)
+   n0: 971616 0x109237: main (main.c:121)
+  n0: 1440 in 2 places, all below massif's threshold (1.00%)
+ n1: 509448 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 509448 0x10B3D6: esegui_input (main.c:172)
+   n0: 509448 0x109237: main (main.c:121)
+ n0: 17120 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=8
+#-----------
+time=1476628390
+mem_heap_B=6668496
+mem_heap_extra_B=443344
+mem_stacks_B=0
+heap_tree=detailed
+n5: 6668496 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2606400 0x109D94: alloca_cella (bst.c:31)
+  n1: 2606400 0x109D94: init_cella (bst.c:36)
+   n1: 2606400 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 2606400 0x10B3F6: esegui_input (main.c:173)
+     n0: 2606400 0x109237: main (main.c:121)
+ n1: 2461600 0x109CD4: ricettario_push (main.c:295)
+  n1: 2461600 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 2461600 0x10B3F6: esegui_input (main.c:173)
+    n0: 2461600 0x109237: main (main.c:121)
+ n2: 1039584 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1038432 0x10B4FA: esegui_input (main.c:268)
+   n0: 1038432 0x109237: main (main.c:121)
+  n0: 1152 in 2 places, all below massif's threshold (1.00%)
+ n1: 541400 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 541400 0x10B3D6: esegui_input (main.c:172)
+   n0: 541400 0x109237: main (main.c:121)
+ n0: 19512 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=9
+#-----------
+time=1612124759
+mem_heap_B=7016136
+mem_heap_extra_B=466768
+mem_stacks_B=0
+heap_tree=detailed
+n5: 7016136 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 2741760 0x109D94: alloca_cella (bst.c:31)
+  n1: 2741760 0x109D94: init_cella (bst.c:36)
+   n1: 2741760 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 2741760 0x10B3F6: esegui_input (main.c:173)
+     n0: 2741760 0x109237: main (main.c:121)
+ n1: 2589440 0x109CD4: ricettario_push (main.c:295)
+  n1: 2589440 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 2589440 0x10B3F6: esegui_input (main.c:173)
+    n0: 2589440 0x109237: main (main.c:121)
+ n2: 1095712 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1095712 0x10B4FA: esegui_input (main.c:268)
+   n0: 1095712 0x109237: main (main.c:121)
+  n0: 0 in 2 places, all below massif's threshold (1.00%)
+ n1: 569600 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 569600 0x10B3D6: esegui_input (main.c:172)
+   n0: 569600 0x109237: main (main.c:121)
+ n0: 19624 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=10
+#-----------
+time=1770102363
+mem_heap_B=7314296
+mem_heap_extra_B=487168
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=1941752392
+mem_heap_B=7681528
+mem_heap_extra_B=510744
+mem_stacks_B=0
+heap_tree=detailed
+n5: 7681528 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3004128 0x109D94: alloca_cella (bst.c:31)
+  n1: 3004128 0x109D94: init_cella (bst.c:36)
+   n1: 3004128 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 3004128 0x10B3F6: esegui_input (main.c:173)
+     n0: 3004128 0x109237: main (main.c:121)
+ n1: 2837232 0x109CD4: ricettario_push (main.c:295)
+  n1: 2837232 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 2837232 0x10B3F6: esegui_input (main.c:173)
+    n0: 2837232 0x109237: main (main.c:121)
+ n2: 1199552 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1199552 0x10B4FA: esegui_input (main.c:268)
+   n0: 1199552 0x109237: main (main.c:121)
+  n0: 0 in 2 places, all below massif's threshold (1.00%)
+ n1: 624072 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 624072 0x10B3D6: esegui_input (main.c:172)
+   n0: 624072 0x109237: main (main.c:121)
+ n0: 16544 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=12
+#-----------
+time=2078775683
+mem_heap_B=8001064
+mem_heap_extra_B=532472
+mem_stacks_B=0
+heap_tree=detailed
+n5: 8001064 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3127104 0x109D94: alloca_cella (bst.c:31)
+  n1: 3127104 0x109D94: init_cella (bst.c:36)
+   n1: 3127104 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 3127104 0x10B3F6: esegui_input (main.c:173)
+     n0: 3127104 0x109237: main (main.c:121)
+ n1: 2953376 0x109CD4: ricettario_push (main.c:295)
+  n1: 2953376 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 2953376 0x10B3F6: esegui_input (main.c:173)
+    n0: 2953376 0x109237: main (main.c:121)
+ n2: 1251520 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1251360 0x10B4FA: esegui_input (main.c:268)
+   n0: 1251360 0x109237: main (main.c:121)
+  n0: 160 in 2 places, all below massif's threshold (1.00%)
+ n1: 649568 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 649568 0x10B3D6: esegui_input (main.c:172)
+   n0: 649568 0x109237: main (main.c:121)
+ n0: 19496 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=13
+#-----------
+time=2302076700
+mem_heap_B=8363312
+mem_heap_extra_B=556656
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=2440819379
+mem_heap_B=8581184
+mem_heap_extra_B=571224
+mem_stacks_B=0
+heap_tree=detailed
+n5: 8581184 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3354912 0x109D94: alloca_cella (bst.c:31)
+  n1: 3354912 0x109D94: init_cella (bst.c:36)
+   n1: 3354912 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 3354912 0x10B3F6: esegui_input (main.c:173)
+     n0: 3354912 0x109237: main (main.c:121)
+ n1: 3168528 0x109CD4: ricettario_push (main.c:295)
+  n1: 3168528 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 3168528 0x10B3F6: esegui_input (main.c:173)
+    n0: 3168528 0x109237: main (main.c:121)
+ n2: 1343744 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1341536 0x10B4FA: esegui_input (main.c:268)
+   n0: 1341536 0x109237: main (main.c:121)
+  n0: 2208 in 2 places, all below massif's threshold (1.00%)
+ n1: 696816 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 696816 0x10B3D6: esegui_input (main.c:172)
+   n0: 696816 0x109237: main (main.c:121)
+ n0: 17184 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=15
+#-----------
+time=2626258752
+mem_heap_B=8935624
+mem_heap_extra_B=594928
+mem_stacks_B=0
+heap_tree=detailed
+n5: 8935624 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3493152 0x109D94: alloca_cella (bst.c:31)
+  n1: 3493152 0x109D94: init_cella (bst.c:36)
+   n1: 3493152 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 3493152 0x10B3F6: esegui_input (main.c:173)
+     n0: 3493152 0x109237: main (main.c:121)
+ n1: 3299088 0x109CD4: ricettario_push (main.c:295)
+  n1: 3299088 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 3299088 0x10B3F6: esegui_input (main.c:173)
+    n0: 3299088 0x109237: main (main.c:121)
+ n2: 1400352 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1398720 0x10B4FA: esegui_input (main.c:268)
+   n0: 1398720 0x109237: main (main.c:121)
+  n0: 1632 in 2 places, all below massif's threshold (1.00%)
+ n1: 725864 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 725864 0x10B3D6: esegui_input (main.c:172)
+   n0: 725864 0x109237: main (main.c:121)
+ n0: 17168 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=16
+#-----------
+time=2759664825
+mem_heap_B=9172280
+mem_heap_extra_B=610664
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=2914147784
+mem_heap_B=9493376
+mem_heap_extra_B=632224
+mem_stacks_B=0
+heap_tree=detailed
+n5: 9493376 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 3710016 0x109D94: alloca_cella (bst.c:31)
+  n1: 3710016 0x109D94: init_cella (bst.c:36)
+   n1: 3710016 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 3710016 0x10B3F6: esegui_input (main.c:173)
+     n0: 3710016 0x109237: main (main.c:121)
+ n1: 3503904 0x109CD4: ricettario_push (main.c:295)
+  n1: 3503904 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 3503904 0x10B3F6: esegui_input (main.c:173)
+    n0: 3503904 0x109237: main (main.c:121)
+ n2: 1488736 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1488192 0x10B4FA: esegui_input (main.c:268)
+   n0: 1488192 0x109237: main (main.c:121)
+  n0: 544 in 2 places, all below massif's threshold (1.00%)
+ n1: 771272 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 771272 0x10B3D6: esegui_input (main.c:172)
+   n0: 771272 0x109237: main (main.c:121)
+ n0: 19448 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=18
+#-----------
+time=3144155061
+mem_heap_B=9827232
+mem_heap_extra_B=654048
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=3326772076
+mem_heap_B=10127120
+mem_heap_extra_B=673000
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=3569285498
+mem_heap_B=10496232
+mem_heap_extra_B=697240
+mem_stacks_B=0
+heap_tree=detailed
+n5: 10496232 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4107168 0x109D94: alloca_cella (bst.c:31)
+  n1: 4107168 0x109D94: init_cella (bst.c:36)
+   n1: 4107168 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 4107168 0x10B3F6: esegui_input (main.c:173)
+     n0: 4107168 0x109237: main (main.c:121)
+ n1: 3878992 0x109CD4: ricettario_push (main.c:295)
+  n1: 3878992 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 3878992 0x10B3F6: esegui_input (main.c:173)
+    n0: 3878992 0x109237: main (main.c:121)
+ n2: 1638624 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1635808 0x10B4FA: esegui_input (main.c:268)
+   n0: 1635808 0x109237: main (main.c:121)
+  n0: 2816 in 2 places, all below massif's threshold (1.00%)
+ n1: 854424 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 854424 0x10B3D6: esegui_input (main.c:172)
+   n0: 854424 0x109237: main (main.c:121)
+ n0: 17024 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=21
+#-----------
+time=3766120692
+mem_heap_B=10820136
+mem_heap_extra_B=718184
+mem_stacks_B=0
+heap_tree=detailed
+n5: 10820136 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4235328 0x109D94: alloca_cella (bst.c:31)
+  n1: 4235328 0x109D94: init_cella (bst.c:36)
+   n1: 4235328 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 4235328 0x10B3F6: esegui_input (main.c:173)
+     n0: 4235328 0x109237: main (main.c:121)
+ n1: 4000032 0x109CD4: ricettario_push (main.c:295)
+  n1: 4000032 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 4000032 0x10B3F6: esegui_input (main.c:173)
+    n0: 4000032 0x109237: main (main.c:121)
+ n2: 1687008 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1686304 0x10B4FA: esegui_input (main.c:268)
+   n0: 1686304 0x109237: main (main.c:121)
+  n0: 704 in 2 places, all below massif's threshold (1.00%)
+ n1: 881144 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 881144 0x10B3D6: esegui_input (main.c:172)
+   n0: 881144 0x109237: main (main.c:121)
+ n0: 16624 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=22
+#-----------
+time=3925694357
+mem_heap_B=11074984
+mem_heap_extra_B=735456
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=4118420343
+mem_heap_B=11371152
+mem_heap_extra_B=759704
+mem_stacks_B=0
+heap_tree=detailed
+n5: 11371152 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4449888 0x109D94: alloca_cella (bst.c:31)
+  n1: 4449888 0x109D94: init_cella (bst.c:36)
+   n1: 4449888 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 4449888 0x10B3F6: esegui_input (main.c:173)
+     n0: 4449888 0x109237: main (main.c:121)
+ n1: 4202672 0x109CD4: ricettario_push (main.c:295)
+  n1: 4202672 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 4202672 0x10B3F6: esegui_input (main.c:173)
+    n0: 4202672 0x109237: main (main.c:121)
+ n2: 1777056 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1775744 0x10B4FA: esegui_input (main.c:268)
+   n0: 1775744 0x109237: main (main.c:121)
+  n0: 1312 in 2 places, all below massif's threshold (1.00%)
+ n1: 925952 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 925952 0x10B3D6: esegui_input (main.c:172)
+   n0: 925952 0x109237: main (main.c:121)
+ n0: 15584 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=24
+#-----------
+time=4240064409
+mem_heap_B=11603240
+mem_heap_extra_B=775032
+mem_stacks_B=0
+heap_tree=detailed
+n5: 11603240 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 4540896 0x109D94: alloca_cella (bst.c:31)
+  n1: 4540896 0x109D94: init_cella (bst.c:36)
+   n1: 4540896 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 4540896 0x10B3F6: esegui_input (main.c:173)
+     n0: 4540896 0x109237: main (main.c:121)
+ n1: 4288624 0x109CD4: ricettario_push (main.c:295)
+  n1: 4288624 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 4288624 0x10B3F6: esegui_input (main.c:173)
+    n0: 4288624 0x109237: main (main.c:121)
+ n2: 1812544 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 1811072 0x10B4FA: esegui_input (main.c:268)
+   n0: 1811072 0x109237: main (main.c:121)
+  n0: 1472 in 2 places, all below massif's threshold (1.00%)
+ n1: 944568 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 944568 0x10B3D6: esegui_input (main.c:172)
+   n0: 944568 0x109237: main (main.c:121)
+ n0: 16608 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=25
+#-----------
+time=4481909363
+mem_heap_B=11886592
+mem_heap_extra_B=794136
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=4637886349
+mem_heap_B=12060064
+mem_heap_extra_B=803184
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=4785087286
+mem_heap_B=12259656
+mem_heap_extra_B=815656
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=4973033730
+mem_heap_B=12481016
+mem_heap_extra_B=830352
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=5099290130
+mem_heap_B=12629536
+mem_heap_extra_B=840976
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=5244224501
+mem_heap_B=12834568
+mem_heap_extra_B=856096
+mem_stacks_B=0
+heap_tree=detailed
+n5: 12834568 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5022720 0x109D94: alloca_cella (bst.c:31)
+  n1: 5022720 0x109D94: init_cella (bst.c:36)
+   n1: 5022720 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 5022720 0x10B3F6: esegui_input (main.c:173)
+     n0: 5022720 0x109237: main (main.c:121)
+ n1: 4743680 0x109CD4: ricettario_push (main.c:295)
+  n1: 4743680 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 4743680 0x10B3F6: esegui_input (main.c:173)
+    n0: 4743680 0x109237: main (main.c:121)
+ n2: 2003520 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2003232 0x10B4FA: esegui_input (main.c:268)
+   n0: 2003232 0x109237: main (main.c:121)
+  n0: 288 in 2 places, all below massif's threshold (1.00%)
+ n1: 1045104 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1045104 0x10B3D6: esegui_input (main.c:172)
+   n0: 1045104 0x109237: main (main.c:121)
+ n0: 19544 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=31
+#-----------
+time=5375144733
+mem_heap_B=13045312
+mem_heap_extra_B=868984
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=5520166465
+mem_heap_B=13230224
+mem_heap_extra_B=881968
+mem_stacks_B=0
+heap_tree=detailed
+n5: 13230224 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5178816 0x109D94: alloca_cella (bst.c:31)
+  n1: 5178816 0x109D94: init_cella (bst.c:36)
+   n1: 5178816 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 5178816 0x10B3F6: esegui_input (main.c:173)
+     n0: 5178816 0x109237: main (main.c:121)
+ n1: 4891104 0x109CD4: ricettario_push (main.c:295)
+  n1: 4891104 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 4891104 0x10B3F6: esegui_input (main.c:173)
+    n0: 4891104 0x109237: main (main.c:121)
+ n2: 2063424 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2061504 0x10B4FA: esegui_input (main.c:268)
+   n0: 2061504 0x109237: main (main.c:121)
+  n0: 1920 in 2 places, all below massif's threshold (1.00%)
+ n1: 1077512 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1077512 0x10B3D6: esegui_input (main.c:172)
+   n0: 1077512 0x109237: main (main.c:121)
+ n0: 19368 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=33
+#-----------
+time=5689328174
+mem_heap_B=13456592
+mem_heap_extra_B=896328
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=5933562677
+mem_heap_B=13771432
+mem_heap_extra_B=919096
+mem_stacks_B=0
+heap_tree=detailed
+n5: 13771432 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5390784 0x109D94: alloca_cella (bst.c:31)
+  n1: 5390784 0x109D94: init_cella (bst.c:36)
+   n1: 5390784 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 5390784 0x10B3F6: esegui_input (main.c:173)
+     n0: 5390784 0x109237: main (main.c:121)
+ n1: 5091296 0x109CD4: ricettario_push (main.c:295)
+  n1: 5091296 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 5091296 0x10B3F6: esegui_input (main.c:173)
+    n0: 5091296 0x109237: main (main.c:121)
+ n2: 2152480 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2152480 0x10B4FA: esegui_input (main.c:268)
+   n0: 2152480 0x109237: main (main.c:121)
+  n0: 0 in 2 places, all below massif's threshold (1.00%)
+ n1: 1121336 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1121336 0x10B3D6: esegui_input (main.c:172)
+   n0: 1121336 0x109237: main (main.c:121)
+ n0: 15536 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=35
+#-----------
+time=6195351314
+mem_heap_B=14149824
+mem_heap_extra_B=941264
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=6396038299
+mem_heap_B=14332840
+mem_heap_extra_B=956776
+mem_stacks_B=0
+heap_tree=detailed
+n5: 14332840 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5608224 0x109D94: alloca_cella (bst.c:31)
+  n1: 5608224 0x109D94: init_cella (bst.c:36)
+   n1: 5608224 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 5608224 0x10B3F6: esegui_input (main.c:173)
+     n0: 5608224 0x109237: main (main.c:121)
+ n1: 5296656 0x109CD4: ricettario_push (main.c:295)
+  n1: 5296656 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 5296656 0x10B3F6: esegui_input (main.c:173)
+    n0: 5296656 0x109237: main (main.c:121)
+ n2: 2245024 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2244320 0x10B4FA: esegui_input (main.c:268)
+   n0: 2244320 0x109237: main (main.c:121)
+  n0: 704 in 2 places, all below massif's threshold (1.00%)
+ n1: 1166408 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1166408 0x10B3D6: esegui_input (main.c:172)
+   n0: 1166408 0x109237: main (main.c:121)
+ n0: 16528 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=37
+#-----------
+time=6649830093
+mem_heap_B=14607120
+mem_heap_extra_B=975616
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=6817058249
+mem_heap_B=14767880
+mem_heap_extra_B=986672
+mem_stacks_B=0
+heap_tree=detailed
+n5: 14767880 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 5776992 0x109D94: alloca_cella (bst.c:31)
+  n1: 5776992 0x109D94: init_cella (bst.c:36)
+   n1: 5776992 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 5776992 0x10B3F6: esegui_input (main.c:173)
+     n0: 5776992 0x109237: main (main.c:121)
+ n1: 5456048 0x109CD4: ricettario_push (main.c:295)
+  n1: 5456048 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 5456048 0x10B3F6: esegui_input (main.c:173)
+    n0: 5456048 0x109237: main (main.c:121)
+ n2: 2315776 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2313792 0x10B4FA: esegui_input (main.c:268)
+   n0: 2313792 0x109237: main (main.c:121)
+  n0: 1984 in 2 places, all below massif's threshold (1.00%)
+ n1: 1201976 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1201976 0x10B3D6: esegui_input (main.c:172)
+   n0: 1201976 0x109237: main (main.c:121)
+ n0: 17088 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=39
+#-----------
+time=6975428663
+mem_heap_B=14989016
+mem_heap_extra_B=997928
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=7089296552
+mem_heap_B=15154208
+mem_heap_extra_B=1008688
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=7270381269
+mem_heap_B=15325456
+mem_heap_extra_B=1020304
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=7418727297
+mem_heap_B=15493920
+mem_heap_extra_B=1030760
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=7621596886
+mem_heap_B=15685792
+mem_heap_extra_B=1045112
+mem_stacks_B=0
+heap_tree=detailed
+n5: 15685792 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6138432 0x109D94: alloca_cella (bst.c:31)
+  n1: 6138432 0x109D94: init_cella (bst.c:36)
+   n1: 6138432 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6138432 0x10B3F6: esegui_input (main.c:173)
+     n0: 6138432 0x109237: main (main.c:121)
+ n1: 5797408 0x109CD4: ricettario_push (main.c:295)
+  n1: 5797408 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 5797408 0x10B3F6: esegui_input (main.c:173)
+    n0: 5797408 0x109237: main (main.c:121)
+ n2: 2453632 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2453184 0x10B4FA: esegui_input (main.c:268)
+   n0: 2453184 0x109237: main (main.c:121)
+  n0: 448 in 2 places, all below massif's threshold (1.00%)
+ n1: 1276808 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1276808 0x10B3D6: esegui_input (main.c:172)
+   n0: 1276808 0x109237: main (main.c:121)
+ n0: 19512 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=44
+#-----------
+time=7744987431
+mem_heap_B=15791312
+mem_heap_extra_B=1052024
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=7952295902
+mem_heap_B=16059696
+mem_heap_extra_B=1069096
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=8133495543
+mem_heap_B=16214656
+mem_heap_extra_B=1080608
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=8281729590
+mem_heap_B=16379888
+mem_heap_extra_B=1090128
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=8543235257
+mem_heap_B=16657912
+mem_heap_extra_B=1111304
+mem_stacks_B=0
+heap_tree=detailed
+n5: 16657912 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6515712 0x109D94: alloca_cella (bst.c:31)
+  n1: 6515712 0x109D94: init_cella (bst.c:36)
+   n1: 6515712 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6515712 0x10B3F6: esegui_input (main.c:173)
+     n0: 6515712 0x109237: main (main.c:121)
+ n1: 6153728 0x109CD4: ricettario_push (main.c:295)
+  n1: 6153728 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6153728 0x10B3F6: esegui_input (main.c:173)
+    n0: 6153728 0x109237: main (main.c:121)
+ n2: 2613408 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2612640 0x10B4FA: esegui_input (main.c:268)
+   n0: 2612640 0x109237: main (main.c:121)
+  n0: 768 in 2 places, all below massif's threshold (1.00%)
+ n1: 1355520 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1355520 0x10B3D6: esegui_input (main.c:172)
+   n0: 1355520 0x109237: main (main.c:121)
+ n0: 19544 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=49
+#-----------
+time=8606581301
+mem_heap_B=16720416
+mem_heap_extra_B=1114704
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=8697456250
+mem_heap_B=16827968
+mem_heap_extra_B=1121160
+mem_stacks_B=0
+heap_tree=detailed
+n5: 16827968 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6582240 0x109D94: alloca_cella (bst.c:31)
+  n1: 6582240 0x109D94: init_cella (bst.c:36)
+   n1: 6582240 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6582240 0x10B3F6: esegui_input (main.c:173)
+     n0: 6582240 0x109237: main (main.c:121)
+ n1: 6216560 0x109CD4: ricettario_push (main.c:295)
+  n1: 6216560 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6216560 0x10B3F6: esegui_input (main.c:173)
+    n0: 6216560 0x109237: main (main.c:121)
+ n2: 2640224 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2638880 0x10B4FA: esegui_input (main.c:268)
+   n0: 2638880 0x109237: main (main.c:121)
+  n0: 1344 in 2 places, all below massif's threshold (1.00%)
+ n1: 1369512 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1369512 0x10B3D6: esegui_input (main.c:172)
+   n0: 1369512 0x109237: main (main.c:121)
+ n0: 19432 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=51
+#-----------
+time=8812500422
+mem_heap_B=16958184
+mem_heap_extra_B=1132752
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=8825588699
+mem_heap_B=16996208
+mem_heap_extra_B=1135592
+mem_stacks_B=0
+heap_tree=detailed
+n5: 16996208 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6648480 0x109D94: alloca_cella (bst.c:31)
+  n1: 6648480 0x109D94: init_cella (bst.c:36)
+   n1: 6648480 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6648480 0x10B3F6: esegui_input (main.c:173)
+     n0: 6648480 0x109237: main (main.c:121)
+ n1: 6279120 0x109CD4: ricettario_push (main.c:295)
+  n1: 6279120 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6279120 0x10B3F6: esegui_input (main.c:173)
+    n0: 6279120 0x109237: main (main.c:121)
+ n2: 2668288 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2667136 0x10B4FA: esegui_input (main.c:268)
+   n0: 2667136 0x109237: main (main.c:121)
+  n0: 1152 in 2 places, all below massif's threshold (1.00%)
+ n1: 1383664 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1383664 0x10B3D6: esegui_input (main.c:172)
+   n0: 1383664 0x109237: main (main.c:121)
+ n0: 16656 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=53
+#-----------
+time=8940399018
+mem_heap_B=17099016
+mem_heap_extra_B=1139248
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=9020259637
+mem_heap_B=17168008
+mem_heap_extra_B=1146216
+mem_stacks_B=0
+heap_tree=detailed
+n5: 17168008 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6714720 0x109D94: alloca_cella (bst.c:31)
+  n1: 6714720 0x109D94: init_cella (bst.c:36)
+   n1: 6714720 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6714720 0x10B3F6: esegui_input (main.c:173)
+     n0: 6714720 0x109237: main (main.c:121)
+ n1: 6341680 0x109CD4: ricettario_push (main.c:295)
+  n1: 6341680 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6341680 0x10B3F6: esegui_input (main.c:173)
+    n0: 6341680 0x109237: main (main.c:121)
+ n2: 2696672 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2696320 0x10B4FA: esegui_input (main.c:268)
+   n0: 2696320 0x109237: main (main.c:121)
+  n0: 352 in 2 places, all below massif's threshold (1.00%)
+ n1: 1397752 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1397752 0x10B3D6: esegui_input (main.c:172)
+   n0: 1397752 0x109237: main (main.c:121)
+ n0: 17184 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=55
+#-----------
+time=9134248642
+mem_heap_B=17269424
+mem_heap_extra_B=1150352
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=9210946349
+mem_heap_B=17342288
+mem_heap_extra_B=1155832
+mem_stacks_B=0
+heap_tree=detailed
+n5: 17342288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6781824 0x109D94: alloca_cella (bst.c:31)
+  n1: 6781824 0x109D94: init_cella (bst.c:36)
+   n1: 6781824 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6781824 0x10B3F6: esegui_input (main.c:173)
+     n0: 6781824 0x109237: main (main.c:121)
+ n1: 6405056 0x109CD4: ricettario_push (main.c:295)
+  n1: 6405056 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6405056 0x10B3F6: esegui_input (main.c:173)
+    n0: 6405056 0x109237: main (main.c:121)
+ n2: 2724096 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2723328 0x10B4FA: esegui_input (main.c:268)
+   n0: 2723328 0x109237: main (main.c:121)
+  n0: 768 in 2 places, all below massif's threshold (1.00%)
+ n1: 1411960 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1411960 0x10B3D6: esegui_input (main.c:172)
+   n0: 1411960 0x109237: main (main.c:121)
+ n0: 19352 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=57
+#-----------
+time=9325994884
+mem_heap_B=17384736
+mem_heap_extra_B=1161984
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=9440784522
+mem_heap_B=17497008
+mem_heap_extra_B=1169536
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=59
+#-----------
+time=9449747280
+mem_heap_B=17513768
+mem_heap_extra_B=1171016
+mem_stacks_B=0
+heap_tree=detailed
+n5: 17513768 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6848064 0x109D94: alloca_cella (bst.c:31)
+  n1: 6848064 0x109D94: init_cella (bst.c:36)
+   n1: 6848064 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6848064 0x10B3F6: esegui_input (main.c:173)
+     n0: 6848064 0x109237: main (main.c:121)
+ n1: 6467616 0x109CD4: ricettario_push (main.c:295)
+  n1: 6467616 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6467616 0x10B3F6: esegui_input (main.c:173)
+    n0: 6467616 0x109237: main (main.c:121)
+ n2: 2755008 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2753760 0x10B4FA: esegui_input (main.c:268)
+   n0: 2753760 0x109237: main (main.c:121)
+  n0: 1248 in 2 places, all below massif's threshold (1.00%)
+ n1: 1426072 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1426072 0x10B3D6: esegui_input (main.c:172)
+   n0: 1426072 0x109237: main (main.c:121)
+ n0: 17008 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=60
+#-----------
+time=9565096085
+mem_heap_B=17618216
+mem_heap_extra_B=1176992
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=9651284717
+mem_heap_B=17689792
+mem_heap_extra_B=1182504
+mem_stacks_B=0
+heap_tree=detailed
+n5: 17689792 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6917472 0x109D94: alloca_cella (bst.c:31)
+  n1: 6917472 0x109D94: init_cella (bst.c:36)
+   n1: 6917472 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6917472 0x10B3F6: esegui_input (main.c:173)
+     n0: 6917472 0x109237: main (main.c:121)
+ n1: 6533168 0x109CD4: ricettario_push (main.c:295)
+  n1: 6533168 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6533168 0x10B3F6: esegui_input (main.c:173)
+    n0: 6533168 0x109237: main (main.c:121)
+ n2: 2781376 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2781344 0x10B4FA: esegui_input (main.c:268)
+   n0: 2781344 0x109237: main (main.c:121)
+  n0: 32 in 2 places, all below massif's threshold (1.00%)
+ n1: 1440784 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1440784 0x10B3D6: esegui_input (main.c:172)
+   n0: 1440784 0x109237: main (main.c:121)
+ n0: 16992 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=62
+#-----------
+time=9765364060
+mem_heap_B=17821696
+mem_heap_extra_B=1192000
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=9787884062
+mem_heap_B=17867928
+mem_heap_extra_B=1193192
+mem_stacks_B=0
+heap_tree=detailed
+n5: 17867928 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 6984576 0x109D94: alloca_cella (bst.c:31)
+  n1: 6984576 0x109D94: init_cella (bst.c:36)
+   n1: 6984576 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 6984576 0x10B3F6: esegui_input (main.c:173)
+     n0: 6984576 0x109237: main (main.c:121)
+ n1: 6596544 0x109CD4: ricettario_push (main.c:295)
+  n1: 6596544 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6596544 0x10B3F6: esegui_input (main.c:173)
+    n0: 6596544 0x109237: main (main.c:121)
+ n2: 2812864 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2812640 0x10B4FA: esegui_input (main.c:268)
+   n0: 2812640 0x109237: main (main.c:121)
+  n0: 224 in 2 places, all below massif's threshold (1.00%)
+ n1: 1454544 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1454544 0x10B3D6: esegui_input (main.c:172)
+   n0: 1454544 0x109237: main (main.c:121)
+ n0: 19400 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=64
+#-----------
+time=9903255489
+mem_heap_B=17973616
+mem_heap_extra_B=1201856
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=65
+#-----------
+time=9984521725
+mem_heap_B=18045168
+mem_heap_extra_B=1207056
+mem_stacks_B=0
+heap_tree=detailed
+n5: 18045168 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 7052832 0x109D94: alloca_cella (bst.c:31)
+  n1: 7052832 0x109D94: init_cella (bst.c:36)
+   n1: 7052832 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 7052832 0x10B3F6: esegui_input (main.c:173)
+     n0: 7052832 0x109237: main (main.c:121)
+ n1: 6661008 0x109CD4: ricettario_push (main.c:295)
+  n1: 6661008 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6661008 0x10B3F6: esegui_input (main.c:173)
+    n0: 6661008 0x109237: main (main.c:121)
+ n2: 2845152 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2845088 0x10B4FA: esegui_input (main.c:268)
+   n0: 2845088 0x109237: main (main.c:121)
+  n0: 64 in 2 places, all below massif's threshold (1.00%)
+ n1: 1468768 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1468768 0x10B3D6: esegui_input (main.c:172)
+   n0: 1468768 0x109237: main (main.c:121)
+ n0: 17408 in 7 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=66
+#-----------
+time=10100649612
+mem_heap_B=18170968
+mem_heap_extra_B=1215752
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=67
+#-----------
+time=10163941522
+mem_heap_B=18225720
+mem_heap_extra_B=1219080
+mem_stacks_B=0
+heap_tree=peak
+n5: 18225720 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 7122528 0x109D94: alloca_cella (bst.c:31)
+  n1: 7122528 0x109D94: init_cella (bst.c:36)
+   n1: 7122528 0x109D94: aggiungi_ricetta (main.c:326)
+    n1: 7122528 0x10B3F6: esegui_input (main.c:173)
+     n0: 7122528 0x109237: main (main.c:121)
+ n1: 6726832 0x109CD4: ricettario_push (main.c:295)
+  n1: 6726832 0x109D81: aggiungi_ricetta (main.c:326)
+   n1: 6726832 0x10B3F6: esegui_input (main.c:173)
+    n0: 6726832 0x109237: main (main.c:121)
+ n2: 2876224 0x10ABC4: aggiungi_ordine (main.c:750)
+  n1: 2876224 0x10B4FA: esegui_input (main.c:268)
+   n0: 2876224 0x109237: main (main.c:121)
+  n0: 0 in 2 places, all below massif's threshold (1.00%)
+ n1: 1483224 0x10A27E: input_to_comp_ricetta (main.c:452)
+  n1: 1483224 0x10B3D6: esegui_input (main.c:172)
+   n0: 1483224 0x109237: main (main.c:121)
+ n0: 16912 in 7 places, all below massif's threshold (1.00%)

@@ -1,8 +1,7 @@
-7 200
+5 200
 aggiungi_ricetta tiramisu biscotti 20 caffe 1 uova 4
-ordine tiramisu 5
 rimuovi_ricetta tiramisu
-rimuovi_ricetta gelato
+rifornimento biscotti 50 5 caffe 2 5 uova 4 5
 aggiungi_ricetta gelato latte 15 zucchero 10
 ordine tiramisu 2 
 ordine gelato 10

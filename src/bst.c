@@ -186,7 +186,7 @@ void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
 void stampa_albero(Ptr_cella x){
   if(x != NULL){
     stampa_albero(x->left);
-    printf("%s\n", x->key);
+    printf("%d -> %s\n", x->id, x->key);
     stampa_albero(x->right);
   }
 }
