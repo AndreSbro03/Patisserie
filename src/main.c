@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "myTypes.c"
+//#include "bst.c"
 #include "bst.c"
 
 // GESTIONE INPUT 
@@ -52,6 +53,10 @@ void sposta_ordini_corriere();
 void carica_corriere();
 void ripristina_corriere();
 
+/*
+ * VARIABILI GLOBALI
+*/
+
 int t = 0;
 bool end_program = false;
 
@@ -97,6 +102,10 @@ void sort_corriere() {
   insertion_sort();
 }
 
+/*
+ * INIZIO PROGRAMMA
+*/
+
 int main(){
 
   Input input = analizza_input();
@@ -106,10 +115,8 @@ int main(){
     //printf("\ntime: %d\n", t);
 
     if(t % corriere.t == 0 && t != 0){
-      //printf("passa il corriere\n");
       carica_corriere();
       ripristina_corriere();
-     
     }
 
     input = analizza_input();
@@ -133,12 +140,6 @@ int main(){
 
 }
 
-void stampa_magazzino(){
-  for(size_t i = 0; i < magazzino.len; ++i){
-    printf("Sezione %ld avanzano %d grammi.\n", i, magazzino.sez[i].qnt);
-  }
-}
-
 // Ritorna il numero dell'istruzione eseguita, se negativo allora si è verificato un problema nella relativa isturione
 int esegui_input(Input inp){
 
@@ -150,7 +151,9 @@ int esegui_input(Input inp){
   }
 
   char * istr = input_get_token(&inp);
-
+  
+  //TODO: se vuoi velocizzare leggermente il tempo puoi al posto che usare strcmp andare semplicemente a vedere la 
+  //      terza lettera del comando ("g", "m", "f", "d").
   if(strcmp(istr, "aggiungi_ricetta") == 0){
 
     char * nome = input_get_token(&inp);
@@ -242,7 +245,7 @@ int esegui_input(Input inp){
     printf("rifornito\n");
     out = RIF;
   }
-
+  
   else if(strcmp(istr, "ordine") == 0){
 
     char * temp = input_get_token(&inp);
@@ -304,8 +307,8 @@ int ricettario_push(Ricetta rt){
     }
     memcpy(&ricettario.rts[ricettario.len], &rt, sizeof(Ricetta));
 
-    ricettario.len += 1;
-    return ricettario.len - 1;
+    //ricettario.len += 1;
+    return ricettario.len++;
   }
   else{
     int id = 0;
@@ -864,6 +867,12 @@ void carica_corriere(){
   for(size_t i = 0; i < corriere.len; ++i){
     Ordine ord = corriere.buff[i];
     printf("%d %s %d\n", ord.t, ricettario.rts[ord.rcId].nome, ord.qnt);
+  }
+}
+
+void stampa_magazzino(){
+  for(size_t i = 0; i < magazzino.len; ++i){
+    printf("Sezione %ld avanzano %d grammi.\n", i, magazzino.sez[i].qnt);
   }
 }
 
