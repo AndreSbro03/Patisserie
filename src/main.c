@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "myTypes.c"
-//#include "bst.c"
 #include "bst.c"
 
 // GESTIONE INPUT 

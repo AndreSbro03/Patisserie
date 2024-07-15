@@ -1,2 +1,11 @@
 build/
 .vscode/
+esempi/
+inpgen/
+
+# Test files
+*.txt
+
+# Valgrind files
+callgrind.*
+massif.*

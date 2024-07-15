@@ -9,7 +9,7 @@ file(){
   DFLAGS="-lm" #-lX11
   NAME=$1
 
-  gcc $CFLAGS $DEBUG -o $NAME src/NAME.c $DFLAGS
+  gcc $CFLAGS $DEBUG -o $NAME src/$NAME.c $DFLAGS
   mv $NAME ~/Desktop/API/progetto/build/
 }
 
@@ -38,3 +38,5 @@ callgrind(){
   valgrind --tool=callgrind ./build/App < Tests/open11.txt 
   mv callgrind.out.* callgrind_11
 }
+
+"$@"

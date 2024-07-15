@@ -6,7 +6,7 @@
   #include <string.h>
   #include <stdarg.h>
   #include <stdbool.h>
-
+  
   #include "myTypes.c"
 #endif
 
@@ -29,7 +29,7 @@ typedef struct{
 Ptr_cella alloca_cella();
 Ptr_cella init_cella(char * k, int id);
 bool valore_minore(char * k1, char * k2);
-Ptr_cella cerca_cella(Ptr_cella cl, char * k):
+Ptr_cella cerca_cella(Ptr_cella cl, char * k);
 void aggiungi_cella(Albero * T, Ptr_cella elem);
 Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z);
 void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int));
