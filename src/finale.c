@@ -60,8 +60,8 @@ typedef struct {
   Ptr_lotto lt;
   char * nomeIng;
   uint ingId;
-  //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
+  int reStock;
 } Sezione;
 
 // Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
@@ -79,6 +79,7 @@ typedef struct {
   int qnt;
   int peso;
   uint t;
+  int missIng; 
 } Ordine;
 
 typedef struct ListaOrdini{
@@ -102,7 +103,7 @@ typedef struct {
   uint len;
 } Corriere;
 
-enum {
+typedef enum {
   AGG = 1,
   RMV,
   RIF,
@@ -110,9 +111,14 @@ enum {
   END,
 } Istr;
 
+#define BLACK true
+#define RED false
+
 typedef struct Cella{
   char * key;
   int id;
+
+  bool color;
 
   struct Cella * p;
   struct Cella * left;
@@ -124,22 +130,38 @@ typedef cella_t* Ptr_cella;
 
 typedef struct{
   Ptr_cella root;
+  Ptr_cella null;
 } Albero;
 
+Ptr_cella alloca_cella();
+Ptr_cella init_cella(char * k, int id);
+bool valore_minore(char * k1, char * k2);
+Ptr_cella cerca_cella(Ptr_cella cl, char * k);
+void aggiungi_cella(Albero * T, Ptr_cella elem);
+Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z);
+void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int));
+void stampa_albero(Ptr_cella x, int k);
+void left_rotate(Albero * T, Ptr_cella x);
+void right_rotate(Albero * T, Ptr_cella x);
+void rb_delete_fixup(Albero * T, Ptr_cella x);
+Ptr_cella tree_minimum(Ptr_cella x);
+Ptr_cella tree_successor(Ptr_cella x);
 
 Ptr_cella alloca_cella(){
   Ptr_cella out = malloc(sizeof(cella_t));
   return out;
 }
 
+cella_t Tnil = {.left = NULL, .right = NULL, .color = BLACK};
+
 //Lunghezza tenendo conto il carattere terminatore
 Ptr_cella init_cella(char * k, int id){
   Ptr_cella out = alloca_cella();
   out->key = k;
   out->id = id;
-  out->p = NULL;
-  out->left = NULL;
-  out->right = NULL;
+  out->p = &Tnil;
+  out->left = &Tnil;
+  out->right = &Tnil;
   return out;
 }
 
@@ -160,7 +182,10 @@ bool valore_minore(char * k1, char * k2){
 
 //Cerco la cella contenente una certa chiave nell'albero, se non la trovo ritrono NULL
 Ptr_cella cerca_cella(Ptr_cella cl, char * k){
-  if(cl == NULL || strcmp(k, cl -> key) == 0) return cl;
+  if(cl == &Tnil || strcmp(k, cl -> key) == 0){
+    if(cl == &Tnil) return NULL;
+    else return cl;
+  }
 
   if(valore_minore(k, cl->key)) 
     return cerca_cella(cl->left, k);
@@ -169,13 +194,60 @@ Ptr_cella cerca_cella(Ptr_cella cl, char * k){
 
 }
 
+void rb_insert_fixup(Albero * T, Ptr_cella z){
+  if(z == T->root){
+    T->root->color = BLACK;
+  }
+  else{
+    Ptr_cella x = z->p;
+    if(x->color == RED){
+      if(x == x->p->left){
+
+        Ptr_cella y = x->p->right;
+        if(y->color == RED){
+          x->color = BLACK;
+          y->color = BLACK;
+          x->p->color = RED;
+          rb_insert_fixup(T, x->p);
+        }
+        else if(z == x->right){
+          z = x;
+          left_rotate(T, z);
+          x = z->p;
+          x->color = BLACK;
+          x->p->color = RED;
+          right_rotate(T, x->p);
+        }
+      }
+
+      else{
+        Ptr_cella y = x->p->left;
+        if(y->color == RED){
+          x->color = BLACK;
+          y->color = BLACK;
+          x->p->color = RED;
+          rb_insert_fixup(T, x->p);
+        }
+        else if(z == x->left){
+          z = x;
+          right_rotate(T, z);
+          x = z->p;
+          x->color = BLACK;
+          x->p->color = RED;
+          left_rotate(T, x->p);
+        }
+      }
+    }
+  }
+}
+
 void aggiungi_cella(Albero * T, Ptr_cella elem){
   
-  Ptr_cella y = NULL;
+  Ptr_cella y = &Tnil;
   Ptr_cella x = T->root;
 
   // Vado a cercare il punto dell'albero dove andare ad aggiungere la cella
-  while(x != NULL){
+  while(x != &Tnil){
     y = x;
     if(valore_minore(elem->key, x->key)){
       x = x->left;
@@ -186,38 +258,105 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
   }
 
   elem->p = y; //y è l'ultimo nodo valido prima di trovare NULL
-  
+
   //Se l'albero è vuoto
-  if(y == NULL){
-    T->root = elem;
-  }
-  else if(valore_minore(elem->key, y->key)){
-    y->left = elem;  
-  }
-  else{
-    y->right = elem;
-  }
+  if(y == &Tnil) T->root = elem;
+  else if(valore_minore(elem->key, y->key)) y->left = elem;  
+  else y->right = elem;
+  
+  elem->color = RED;
+
+  rb_insert_fixup(T, elem);
+
 }
 
-Ptr_cella cella_minima(Ptr_cella x){
-  while(x->left != NULL){
+Ptr_cella tree_minimum(Ptr_cella x){
+  while(x->left != &Tnil){
     x = x->left;
   }
   return x;
 }
 
-Ptr_cella cella_successiva(Ptr_cella x){
-  if(x->right != NULL) {
-    return cella_minima(x->right);
+Ptr_cella tree_successor(Ptr_cella x){
+  if(x->right != &Tnil){
+    return tree_minimum(x->right);
   }
   Ptr_cella y = x->p;
 
-  while(y != NULL && x == y->right){
+  while(y != &Tnil && x == y->right){
     x = y;
-    y = x->p;
+    y = y->p;
   }
   return y;
+}
 
+
+void left_rotate(Albero * T, Ptr_cella x){
+  Ptr_cella y = x->right;
+  if(y == &Tnil) return;
+
+  x->right = y->left;
+
+  if(y->left != &Tnil) y->left->p = x;
+
+  y->p = x->p;
+
+  if(x->p == &Tnil) T->root = y;
+  else if(x == x->p->left)  x->p->left = y;
+  else x->p->right = y;
+
+  y->left = x;
+  x->p = y;
+}
+
+void right_rotate(Albero * T, Ptr_cella x){
+  Ptr_cella y = x->left;
+  if(y == &Tnil) return;
+
+  x->left = y->right;
+
+  if(y->right != &Tnil) y->right->p = x;
+
+  y->p = x->p;
+
+  if(x->p == &Tnil) T->root = y;
+  else if(x == x->p->right) x->p->right = y;
+  else x->p->left = y;
+
+  y->right = x;
+  x->p = y;
+}
+
+void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
+
+  if(x != &Tnil){
+    dealloca_albero(x->left, dealloca_dati);
+    dealloca_albero(x->right, dealloca_dati);
+    //printf("Ho liberato <%s>!\n", x->key);
+    if(dealloca_dati != NULL) (*dealloca_dati)(x->id);
+    free(x->key);
+    free(x);
+  }
+}
+
+void stampa_albero_(Ptr_cella x){
+  if(x != &Tnil){
+    stampa_albero_(x->left);
+    if(!x->color) printf("\033[1;31m"); //Set the text to the color red
+    else printf("\033[0m");
+    printf("%d -> %s\n", x->id, x->key);
+    stampa_albero_(x->right);
+  }
+}
+
+void stampa_albero(Ptr_cella x, int k){
+  if(x != &Tnil){
+    stampa_albero(x->left, k + 1);
+    if(!x->color) printf("\033[1;31m"); //Set the text to the color red
+    else printf("\033[0m");
+    printf("%d : %d -> %s\n", k, x->id, x->key);
+    stampa_albero(x->right, k + 1);
+  }
 }
 
 Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
@@ -227,16 +366,16 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
   // Se la cella non ha sotto-alberi allora basta rimuoverla
   // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
   // andare a sostituire in z.
-  if(z->left == NULL || z->right == NULL){
+  if(z->left == &Tnil || z->right == &Tnil){
     rmv = z;
   }
   else{
-    rmv = cella_successiva(z);
+    rmv = tree_successor(z);
   } 
   
   // Se la cella da rimuovere ha un ramo sinistro andiamo a salvare
   // il puntatore al ramo sennò salviamo quello destro 
-  if(rmv->left != NULL){
+  if(rmv->left != &Tnil){
     temp = rmv->left;
   }
   else{
@@ -244,14 +383,14 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
   }
 
   // Andiamo a dire al sotto-albero che adesso la sua cella padre è quella di rmv
-  if(temp != NULL){
+  if(temp != &Tnil){
     temp->p = rmv->p;
   }
 
   // Se la cella da rimuvore non ha un padre allora significa che bisgna andare a sostituire
   // la radice dell'albero con il nostro sottalbero salvato, sennò se la cella da rimuovere fa 
   // parte di un sottoalbero sinistro/destro mettiamo il sotto-albero a sinistra/destra.
-  if(rmv->p == NULL){
+  if(rmv->p == &Tnil){
     T->root = temp;
   }
   else if(rmv == rmv->p->left){
@@ -272,27 +411,66 @@ Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
     rmv->id = t;
   }
 
-  free(rmv->key);
+  if(rmv->color == BLACK) rb_delete_fixup(T, temp);
   return rmv;
 }
 
-void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
+void rb_delete_fixup(Albero * T, Ptr_cella x){
 
-  if(x != NULL){
-    dealloca_albero(x->left, dealloca_dati);
-    dealloca_albero(x->right, dealloca_dati);
-    //printf("Ho liberato <%s>!\n", x->key);
-    if(dealloca_dati != NULL) (*dealloca_dati)(x->id);
-    free(x->key);
-    free(x);
+  if(x == &Tnil) return;  
+  if(x->color == RED || x->p == &Tnil) x->color = BLACK; // Caso 0
+  else if(x == x->p->left){
+
+    Ptr_cella w = x->p->right;
+  
+    if(w->color == RED){
+      w->color = BLACK;
+  
+      x->p->color = RED; // Caso 1
+      left_rotate(T,x->p); // Caso 1
+      w = x->p->right; // Caso 1
+    }
+    if(w->left->color == BLACK && w->right->color == BLACK){
+      w->color = RED; // Caso 2 
+      rb_delete_fixup(T,x->p); // Caso 2
+    }
+    else if(w->right->color == BLACK){
+      w->left->color = BLACK; // Caso 3
+      w->color = RED; // Caso 3
+      right_rotate(T,w); // Caso 3
+      w = x->p->right; // Caso 3
+      w->color = x->p->color; // Caso 4
+      x->p->color = BLACK; // Caso 4
+      w->right->color = BLACK; // Caso 4
+      left_rotate(T,x->p); // Caso 4
+    }
   }
-}
+  
+  else {
+     Ptr_cella w = x->p->left;
+  
+    if(w->color == RED){
+      w->color = BLACK;
+  
+      x->p->color = RED; // Caso 1
+      right_rotate(T,x->p); // Caso 1
+      w = x->p->left; // Caso 1
+    }
+    if(w->right->color == BLACK && w->left->color == BLACK){
+      w->color = RED; // Caso 2 
+      rb_delete_fixup(T,x->p); // Caso 2
+    }
+    else if(w->left->color == BLACK){
+      w->right->color = BLACK; // Caso 3
+      w->color = RED; // Caso 3
+      left_rotate(T,w); // Caso 3
+      w = x->p->left; // Caso 3
+      w->color = x->p->color; // Caso 4
+      x->p->color = BLACK; // Caso 4
+      w->left->color = BLACK; // Caso 4
+      right_rotate(T,x->p); // Caso 4
+    }
 
-void stampa_albero(Ptr_cella x){
-  if(x != NULL){
-    stampa_albero(x->left);
-    printf("%d -> %s\n", x->id, x->key);
-    stampa_albero(x->right);
   }
 }
 
@@ -314,7 +492,8 @@ int ricettario_push(Ricetta rt);
 
 // GESTIONE INGREDIENTI 
 int aggiungi_ingrediente(char * ing);
-bool ci_sono_ingr(Ordine ord);
+bool ci_sono_ingr(Ordine ord, int * missIng);
+int controlla_scorte(Ordine ord);
 Ptr_nodo push_val(Ptr_nodo testa, int val);
 Ptr_nodo pop_val(Ptr_nodo testa, int * out);
 
@@ -324,7 +503,7 @@ Ptr_lotto inserisci_per_scadenza(Ptr_lotto lt, Ptr_lotto testaLt);
 void aggiungi_lotto(Ptr_lotto lt, int ingId);
 void dealloca_lotti(Ptr_lotto testaLt);
 void dealloca_magazzino();
-void rimuovi_scaduti(Sezione * sez, int ingId);
+void rimuovi_scaduti(Sezione * sez);
 Ptr_lotto dealloca_testa(Ptr_lotto testa);
 void preleva_ingredienti(Sezione * sez, int qnt);
 void stampa_magazzino();
@@ -342,13 +521,53 @@ void sposta_ordini_corriere();
 void carica_corriere();
 void ripristina_corriere();
 
+/*
+ * VARIABILI GLOBALI
+*/
+void swap(Ordine * a, int i1, int i2){
+    //printf("%d %d\n", i1, i2);
+    Ordine t = a[i1];
+    a[i1] = a[i2];
+    a[i2] = t;
+}
+
+int partition(Ordine * a, int p, int r){
+
+    Ordine x = a[r];
+    int i = p - 1;
+
+    for(int j = p; j < r; ++j){
+      if(a[j].peso > x.peso){
+        i = i + 1;
+        swap(a, i, j);
+      }
+      else if(a[j].peso == x.peso){
+        if(a[j].t <= x.t){
+          i = i + 1;
+          swap(a, i, j);
+        }
+      }
+    }
+    swap(a, i + 1, r);
+
+    return i + 1;
+}
+
+void quicksort(Ordine * a, int p, int r){
+    if(p < r){
+        int q = partition(a, p, r);
+        quicksort(a, p, q - 1);
+        quicksort(a, q + 1, r);
+    }
+}
+
 int t = 0;
 bool end_program = false;
 
-Albero idxRicettario = {.root = NULL};
+Albero idxRicettario = {.root = &Tnil};
 Ricettario ricettario = {.rts = NULL, .len = 0};
 
-Albero ingredienti = {.root = NULL};
+Albero ingredienti = {.root = &Tnil};
 int maxId = -1;
 
 Ptr_nodo validIngId = NULL;
@@ -369,23 +588,15 @@ Corriere corriere = {
 Coda pronti = {.buff = NULL, .sp = NULL};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
-void insertion_sort(){
-  for(size_t j = 1; j < corriere.len; ++j){
-    Ordine key = corriere.buff[j];
-    int i = (int) j - 1;
 
-    while(i >= 0 && corriere.buff[i].peso < key.peso){
-      corriere.buff[i + 1] = corriere.buff[i];
-      i--;
-    }
-
-    corriere.buff[i + 1] = key;
-  }
+void sort_corriere(Corriere * c) {
+  quicksort(c->buff, 0, c->len - 1);
+  //insertion_sort(c->buff, c->len);
 }
 
-void sort_corriere() {
-  insertion_sort();
-}
+/*
+ * INIZIO PROGRAMMA
+*/
 
 int main(){
 
@@ -396,21 +607,21 @@ int main(){
     //printf("\ntime: %d\n", t);
 
     if(t % corriere.t == 0 && t != 0){
-      //printf("passa il corriere\n");
       carica_corriere();
       ripristina_corriere();
-     
     }
 
     input = analizza_input();
     int istr = esegui_input(input);
+
    
     if(istr == END) end_program = true;
     else{
       t++;
     } 
   }
- 
+  
+  //stampa_albero(idxRicettario.root, 0);
   dealloca_albero(idxRicettario.root, &dealloca_ricetta);
   dealloca_albero(ingredienti.root, NULL);
   dealloca_magazzino();
@@ -421,12 +632,6 @@ int main(){
   
   return 0; 
 
-}
-
-void stampa_magazzino(){
-  for(size_t i = 0; i < magazzino.len; ++i){
-    printf("Sezione %ld avanzano %d grammi.\n", i, magazzino.sez[i].qnt);
-  }
 }
 
 // Ritorna il numero dell'istruzione eseguita, se negativo allora si è verificato un problema nella relativa isturione
@@ -440,7 +645,9 @@ int esegui_input(Input inp){
   }
 
   char * istr = input_get_token(&inp);
-
+  
+  //TODO: se vuoi velocizzare leggermente il tempo puoi al posto che usare strcmp andare semplicemente a vedere la 
+  //      terza lettera del comando ("g", "m", "f", "d").
   if(strcmp(istr, "aggiungi_ricetta") == 0){
 
     char * nome = input_get_token(&inp);
@@ -478,10 +685,16 @@ int esegui_input(Input inp){
   else if(strcmp(istr, "rifornimento") == 0){
 
     char * temp;
-    for(size_t i = 1; i < inp.len; i += 3){
+
+    size_t nLotti = (inp.len - 1)/3;
+
+    for(size_t i = 0; i < nLotti; ++i){
       // vai a prendere l'id dell'ingrediente sapendo il Nome
       temp = input_get_token(&inp);
       int ingId = aggiungi_ingrediente(temp);
+
+      // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
+      magazzino.sez[ingId].reStock = t;
 
       Ptr_lotto lt = malloc(sizeof(lotto_t));
 
@@ -500,30 +713,41 @@ int esegui_input(Input inp){
       aggiungi_lotto(lt, ingId);
     }
 
-    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati
+    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente 
+    // che è appena stato rifornito
     Ptr_ordine prec = NULL;
     for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
-      if(ci_sono_ingr(corr->ord)){
-        prepara_ordine(corr->ord, true);
+      
+      if(magazzino.sez[corr->ord.missIng].reStock == t){
 
-        if(prec != NULL){
-          prec->next = corr->next;
-          free(corr);
-          corr = prec;
+        int newMissIng = -1;
+        if(ci_sono_ingr(corr->ord, &newMissIng)){
+          prepara_ordine(corr->ord, true);
 
-          if(prec->next == NULL) attesa.sp = prec; 
+          if(prec != NULL){
+            prec->next = corr->next;
+            free(corr);
+            corr = prec;
 
+            if(prec->next == NULL) attesa.sp = prec; 
+
+            prec = corr;
+            corr = corr->next;
+          }
+          else{
+            dequeue(&attesa);
+            corr = attesa.buff;
+            if(corr == NULL) break;
+            prec = NULL;
+          }
+        }
+        else{
+          corr->ord.missIng = newMissIng;
           prec = corr;
           corr = corr->next;
         }
-        else{
-          dequeue(&attesa);
-          corr = attesa.buff;
-          if(corr == NULL) break;
-          prec = NULL;
-        }
       }
-      else{
+      else {        
         prec = corr;
         corr = corr->next;
       }
@@ -532,12 +756,12 @@ int esegui_input(Input inp){
     printf("rifornito\n");
     out = RIF;
   }
-
+  
   else if(strcmp(istr, "ordine") == 0){
 
-    char * temp = input_get_token(&inp);
-    int rcId = cerca_ricetta(temp);
-    free(temp);
+    char * nome = input_get_token(&inp);
+    int rcId = cerca_ricetta(nome);
+    free(nome);
 
     if(rcId < 0){
       //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
@@ -545,21 +769,26 @@ int esegui_input(Input inp){
       out = -ORD;
     }
     else{
+      
+      // Creo l'ordine
       Ordine ord;
-      //strcpy(ord.nome, inp.tokens[1]);
+      
       ord.rcId = rcId;
-
-      temp = input_get_token(&inp);
-      ord.qnt = atoi(temp);
-      free(temp);
-
       ord.t = t;
+      ord.missIng = -1;
 
-      if(ci_sono_ingr(ord)){
+      char * qnt = input_get_token(&inp);
+      ord.qnt = atoi(qnt);
+      free(qnt);
+      
+      // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
+      int missIng;
+      if(ci_sono_ingr(ord, &missIng)){
         prepara_ordine(ord, false);
       }
       else{
         //printf("Ordine \"%s\" in attesa.\n", ord.nome);
+        ord.missIng = missIng;
         aggiungi_ordine(ord, &attesa, false); 
       }
       printf("accettato\n");
@@ -584,7 +813,6 @@ int cerca_ricetta(char * nome) {
   return cl->id;
 }
 
-//TODO: segnare indirizzi ancora validi per evitare crescite superflue
 int ricettario_push(Ricetta rt){
 
   if(validRctId == NULL){
@@ -595,8 +823,8 @@ int ricettario_push(Ricetta rt){
     }
     memcpy(&ricettario.rts[ricettario.len], &rt, sizeof(Ricetta));
 
-    ricettario.len += 1;
-    return ricettario.len - 1;
+    //ricettario.len += 1;
+    return ricettario.len++;
   }
   else{
     int id = 0;
@@ -806,19 +1034,6 @@ Ptr_nodo pop_val(Ptr_nodo testa, int * out){
   return testa;
 }
 
-/*
-void decr_used_ingr(int rcId){
-  for(size_t i = 0; i < ricettario.rts[rcId].len; ++i){
-    size_t ingId = ricettario.rts[rcId].comp[i].ingId;
-    Sezione * sez = &magazzino.sez[ingId];
-    sez->usedBy -= 1;
-
-    rimuovi_scaduti(sez, ingId);
-
-  }
-}
-*/
-
 // Rimuove la ricetta se la trova
 //  - 0 se rimossa
 //  - 1 se non trovata
@@ -827,14 +1042,14 @@ int rimuovi_ricetta(char * nome){
   Ptr_cella x = cerca_cella(idxRicettario.root, nome);
   
   if(x != NULL){
-   if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
+    if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
         return 2;
     }
     else{
       x = rimuovi_cella(&idxRicettario, x);
-      //decr_used_ingr(x->id);
       dealloca_ricetta(x->id);
       validRctId = push_val(validRctId, x->id);
+      free(x->key);
       free(x);
       return 0;
     }
@@ -859,9 +1074,9 @@ void espandi_magazzino(int ingId, char * nomeIng){
 
   for(size_t i = magazzino.len; i < len; i++){
     magazzino.sez[i].nomeIng = nomeIng;
-    //magazzino.sez[i].usedBy = 0;
     magazzino.sez[i].lt = NULL;
     magazzino.sez[i].qnt = 0;
+    magazzino.sez[i].reStock = -1;
   }
  
   magazzino.len = len;
@@ -961,9 +1176,7 @@ Ptr_lotto dealloca_testa(Ptr_lotto testa){
   return out;
 }
 
-void rimuovi_scaduti(Sezione * sez, int ingId){
-  //TODO: rimuovi sta roba
-  (void) ingId;
+void rimuovi_scaduti(Sezione * sez){
 
   Ptr_lotto temp;
   for(temp = sez->lt; temp != NULL;){
@@ -975,37 +1188,32 @@ void rimuovi_scaduti(Sezione * sez, int ingId){
   }
   sez->lt = temp;
 
-  /*
-  // Check per vedere se l'ingrediente va rimosso
-  if(sez->lt == NULL && sez->usedBy == 0){
-    //TODO: aggiungere l'ingId ad una lista di id riciclabili
-    Ptr_cella x = cerca_cella(ingredienti.root, sez->nomeIng); 
-      if(x != NULL){
-        validIngId = push_val(validIngId, ingId);
-        free(rimuovi_cella(&ingredienti,x));
-        printf("Ho pulito\n");
-    }
-  }
-  */
-
 }
 
-bool ci_sono_ingr(Ordine ord){
- 
+// Ritorna -1 se ci sono tutte le scorte necessarie per preparare un ordine mentre
+// ritorna l'id del primo ingrediente mancante in caso contrario
+int controlla_scorte(Ordine ord){
+
   Ricetta rc = ricettario.rts[ord.rcId];
   for(size_t i = 0; i < rc.len; ++i){
     size_t id = rc.comp[i].ingId;
 
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(magazzino.sez[id].lt == NULL) return false;
-    rimuovi_scaduti(&magazzino.sez[id], id);
+    if(magazzino.sez[id].lt == NULL) return id;
+    rimuovi_scaduti(&magazzino.sez[id]);
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return false;
+    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return id;
   }
 
-  return true;
+  return -1;
+}
 
+
+bool ci_sono_ingr(Ordine ord, int * missIng){
+  int out = controlla_scorte(ord); 
+  if (missIng != NULL) *missIng = out;
+  return out == -1;
 }
 
 void preleva_ingredienti(Sezione * sez, int qnt){
@@ -1142,7 +1350,6 @@ void sposta_ordini_corriere(){
   int left = corriere.cap;
   int cont = 0;
  
-  //TODO: ciclo con complessità (n+1)*(n/2) ~ O(n^2) da rivedere
   for(Ptr_ordine temp = pronti.buff; temp != NULL; temp = temp->next){
     if(temp->ord.peso > left){
       break;
@@ -1180,11 +1387,17 @@ void carica_corriere(){
     return;
   }
 
-  sort_corriere();
+  sort_corriere(&corriere);
 
   for(size_t i = 0; i < corriere.len; ++i){
     Ordine ord = corriere.buff[i];
     printf("%d %s %d\n", ord.t, ricettario.rts[ord.rcId].nome, ord.qnt);
+  }
+}
+
+void stampa_magazzino(){
+  for(size_t i = 0; i < magazzino.len; ++i){
+    printf("Sezione %ld avanzano %d grammi.\n", i, magazzino.sez[i].qnt);
   }
 }
 

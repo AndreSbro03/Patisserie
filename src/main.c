@@ -3,8 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "myTypes.c"
-#include "bst.c"
+#include "myTypes.h"
+#include "rbt.c"
+#include "algoritmi.h"
 
 // GESTIONE INPUT 
 Input analizza_input();
@@ -24,7 +25,8 @@ int ricettario_push(Ricetta rt);
 
 // GESTIONE INGREDIENTI 
 int aggiungi_ingrediente(char * ing);
-bool ci_sono_ingr(Ordine ord);
+bool ci_sono_ingr(Ordine ord, int * missIng);
+int controlla_scorte(Ordine ord);
 Ptr_nodo push_val(Ptr_nodo testa, int val);
 Ptr_nodo pop_val(Ptr_nodo testa, int * out);
 
@@ -59,10 +61,10 @@ void ripristina_corriere();
 int t = 0;
 bool end_program = false;
 
-Albero idxRicettario = {.root = NULL};
+Albero idxRicettario = {.root = &Tnil};
 Ricettario ricettario = {.rts = NULL, .len = 0};
 
-Albero ingredienti = {.root = NULL};
+Albero ingredienti = {.root = &Tnil};
 int maxId = -1;
 
 Ptr_nodo validIngId = NULL;
@@ -83,22 +85,10 @@ Corriere corriere = {
 Coda pronti = {.buff = NULL, .sp = NULL};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
-void insertion_sort(){
-  for(size_t j = 1; j < corriere.len; ++j){
-    Ordine key = corriere.buff[j];
-    int i = (int) j - 1;
 
-    while(i >= 0 && corriere.buff[i].peso < key.peso){
-      corriere.buff[i + 1] = corriere.buff[i];
-      i--;
-    }
-
-    corriere.buff[i + 1] = key;
-  }
-}
-
-void sort_corriere() {
-  insertion_sort();
+void sort_corriere(Corriere * c) {
+  quicksort(c->buff, 0, c->len - 1);
+  //insertion_sort(c->buff, c->len);
 }
 
 /*
@@ -120,13 +110,15 @@ int main(){
 
     input = analizza_input();
     int istr = esegui_input(input);
+
    
     if(istr == END) end_program = true;
     else{
       t++;
     } 
   }
- 
+  
+  //stampa_albero(idxRicettario.root, 0);
   dealloca_albero(idxRicettario.root, &dealloca_ricetta);
   dealloca_albero(ingredienti.root, NULL);
   dealloca_magazzino();
@@ -190,10 +182,16 @@ int esegui_input(Input inp){
   else if(strcmp(istr, "rifornimento") == 0){
 
     char * temp;
-    for(size_t i = 1; i < inp.len; i += 3){
+
+    size_t nLotti = (inp.len - 1)/3;
+
+    for(size_t i = 0; i < nLotti; ++i){
       // vai a prendere l'id dell'ingrediente sapendo il Nome
       temp = input_get_token(&inp);
       int ingId = aggiungi_ingrediente(temp);
+
+      // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
+      magazzino.sez[ingId].reStock = t;
 
       Ptr_lotto lt = malloc(sizeof(lotto_t));
 
@@ -212,30 +210,41 @@ int esegui_input(Input inp){
       aggiungi_lotto(lt, ingId);
     }
 
-    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati
+    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente 
+    // che è appena stato rifornito
     Ptr_ordine prec = NULL;
     for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
-      if(ci_sono_ingr(corr->ord)){
-        prepara_ordine(corr->ord, true);
+      
+      if(magazzino.sez[corr->ord.missIng].reStock == t){
 
-        if(prec != NULL){
-          prec->next = corr->next;
-          free(corr);
-          corr = prec;
+        int newMissIng = -1;
+        if(ci_sono_ingr(corr->ord, &newMissIng)){
+          prepara_ordine(corr->ord, true);
 
-          if(prec->next == NULL) attesa.sp = prec; 
+          if(prec != NULL){
+            prec->next = corr->next;
+            free(corr);
+            corr = prec;
 
+            if(prec->next == NULL) attesa.sp = prec; 
+
+            prec = corr;
+            corr = corr->next;
+          }
+          else{
+            dequeue(&attesa);
+            corr = attesa.buff;
+            if(corr == NULL) break;
+            prec = NULL;
+          }
+        }
+        else{
+          corr->ord.missIng = newMissIng;
           prec = corr;
           corr = corr->next;
         }
-        else{
-          dequeue(&attesa);
-          corr = attesa.buff;
-          if(corr == NULL) break;
-          prec = NULL;
-        }
       }
-      else{
+      else {        
         prec = corr;
         corr = corr->next;
       }
@@ -247,9 +256,9 @@ int esegui_input(Input inp){
   
   else if(strcmp(istr, "ordine") == 0){
 
-    char * temp = input_get_token(&inp);
-    int rcId = cerca_ricetta(temp);
-    free(temp);
+    char * nome = input_get_token(&inp);
+    int rcId = cerca_ricetta(nome);
+    free(nome);
 
     if(rcId < 0){
       //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
@@ -257,21 +266,26 @@ int esegui_input(Input inp){
       out = -ORD;
     }
     else{
+      
+      // Creo l'ordine
       Ordine ord;
-      //strcpy(ord.nome, inp.tokens[1]);
+      
       ord.rcId = rcId;
-
-      temp = input_get_token(&inp);
-      ord.qnt = atoi(temp);
-      free(temp);
-
       ord.t = t;
+      ord.missIng = -1;
 
-      if(ci_sono_ingr(ord)){
+      char * qnt = input_get_token(&inp);
+      ord.qnt = atoi(qnt);
+      free(qnt);
+      
+      // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
+      int missIng;
+      if(ci_sono_ingr(ord, &missIng)){
         prepara_ordine(ord, false);
       }
       else{
         //printf("Ordine \"%s\" in attesa.\n", ord.nome);
+        ord.missIng = missIng;
         aggiungi_ordine(ord, &attesa, false); 
       }
       printf("accettato\n");
@@ -525,13 +539,14 @@ int rimuovi_ricetta(char * nome){
   Ptr_cella x = cerca_cella(idxRicettario.root, nome);
   
   if(x != NULL){
-   if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
+    if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
         return 2;
     }
     else{
       x = rimuovi_cella(&idxRicettario, x);
       dealloca_ricetta(x->id);
       validRctId = push_val(validRctId, x->id);
+      free(x->key);
       free(x);
       return 0;
     }
@@ -556,9 +571,9 @@ void espandi_magazzino(int ingId, char * nomeIng){
 
   for(size_t i = magazzino.len; i < len; i++){
     magazzino.sez[i].nomeIng = nomeIng;
-    //magazzino.sez[i].usedBy = 0;
     magazzino.sez[i].lt = NULL;
     magazzino.sez[i].qnt = 0;
+    magazzino.sez[i].reStock = -1;
   }
  
   magazzino.len = len;
@@ -672,22 +687,30 @@ void rimuovi_scaduti(Sezione * sez){
 
 }
 
-bool ci_sono_ingr(Ordine ord){
- 
+// Ritorna -1 se ci sono tutte le scorte necessarie per preparare un ordine mentre
+// ritorna l'id del primo ingrediente mancante in caso contrario
+int controlla_scorte(Ordine ord){
+
   Ricetta rc = ricettario.rts[ord.rcId];
   for(size_t i = 0; i < rc.len; ++i){
     size_t id = rc.comp[i].ingId;
 
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(magazzino.sez[id].lt == NULL) return false;
+    if(magazzino.sez[id].lt == NULL) return id;
     rimuovi_scaduti(&magazzino.sez[id]);
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return false;
+    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return id;
   }
 
-  return true;
+  return -1;
+}
 
+
+bool ci_sono_ingr(Ordine ord, int * missIng){
+  int out = controlla_scorte(ord); 
+  if (missIng != NULL) *missIng = out;
+  return out == -1;
 }
 
 void preleva_ingredienti(Sezione * sez, int qnt){
@@ -861,7 +884,7 @@ void carica_corriere(){
     return;
   }
 
-  sort_corriere();
+  sort_corriere(&corriere);
 
   for(size_t i = 0; i < corriere.len; ++i){
     Ordine ord = corriere.buff[i];

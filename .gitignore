@@ -7,5 +7,5 @@ inpgen/
 *.txt
 
 # Valgrind files
-callgrind.*
-massif.*
+callgrind*
+massif*

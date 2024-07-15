@@ -1,3 +1,8 @@
+#ifndef _MYTYP_H_
+#define _MYTYP_H_
+
+#include <stdbool.h>
+
 #define STRMAXLEN 255 + 1
 
 typedef unsigned int uint;
@@ -56,6 +61,8 @@ typedef struct {
   uint ingId;
   //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
+  
+  int reStock; // t dell'ultimo restock 
 } Sezione;
 
 // Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
@@ -73,6 +80,8 @@ typedef struct {
   int qnt;
   int peso;
   uint t;
+
+  int missIng; //Id dell'ultimo ingrediente che abbiamo visto mancare (-1 se non manca niente)
 } Ordine;
 
 typedef struct ListaOrdini{
@@ -96,10 +105,12 @@ typedef struct {
   uint len;
 } Corriere;
 
-enum {
+typedef enum {
   AGG = 1,
   RMV,
   RIF,
   ORD,
   END,
 } Istr; 
+
+#endif

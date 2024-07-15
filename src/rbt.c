@@ -1,14 +1,8 @@
-#define EXEC 1
-
-#ifdef EXEC
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-  #include <stdarg.h>
-  #include <stdbool.h>
-
-  #include "myTypes.c"
-#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdbool.h>
 
 #define BLACK true
 #define RED false
@@ -51,14 +45,16 @@ Ptr_cella alloca_cella(){
   return out;
 }
 
+cella_t Tnil = {.left = NULL, .right = NULL, .color = BLACK};
+
 //Lunghezza tenendo conto il carattere terminatore
 Ptr_cella init_cella(char * k, int id){
   Ptr_cella out = alloca_cella();
   out->key = k;
   out->id = id;
-  out->p = NULL;
-  out->left = NULL;
-  out->right = NULL;
+  out->p = &Tnil;
+  out->left = &Tnil;
+  out->right = &Tnil;
   return out;
 }
 
@@ -79,7 +75,10 @@ bool valore_minore(char * k1, char * k2){
 
 //Cerco la cella contenente una certa chiave nell'albero, se non la trovo ritrono NULL
 Ptr_cella cerca_cella(Ptr_cella cl, char * k){
-  if(cl == NULL || strcmp(k, cl -> key) == 0) return cl;
+  if(cl == &Tnil || strcmp(k, cl -> key) == 0){
+    if(cl == &Tnil) return NULL;
+    else return cl;
+  }
 
   if(valore_minore(k, cl->key)) 
     return cerca_cella(cl->left, k);
@@ -112,11 +111,9 @@ void rb_insert_fixup(Albero * T, Ptr_cella z){
           x->p->color = RED;
           right_rotate(T, x->p);
         }
-
       }
 
       else{
-
         Ptr_cella y = x->p->left;
         if(y->color == RED){
           x->color = BLACK;
@@ -132,19 +129,18 @@ void rb_insert_fixup(Albero * T, Ptr_cella z){
           x->p->color = RED;
           left_rotate(T, x->p);
         }
-
-
       }
     }
   }
 }
+
 void aggiungi_cella(Albero * T, Ptr_cella elem){
   
-  Ptr_cella y = NULL;
+  Ptr_cella y = &Tnil;
   Ptr_cella x = T->root;
 
   // Vado a cercare il punto dell'albero dove andare ad aggiungere la cella
-  while(x != NULL){
+  while(x != &Tnil){
     y = x;
     if(valore_minore(elem->key, x->key)){
       x = x->left;
@@ -155,14 +151,12 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
   }
 
   elem->p = y; //y è l'ultimo nodo valido prima di trovare NULL
-  
+
   //Se l'albero è vuoto
-  if(y == NULL) T->root = elem;
+  if(y == &Tnil) T->root = elem;
   else if(valore_minore(elem->key, y->key)) y->left = elem;  
   else y->right = elem;
-
-  elem->left = NULL;
-  elem->right = NULL;
+  
   elem->color = RED;
 
   rb_insert_fixup(T, elem);
@@ -170,19 +164,19 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
 }
 
 Ptr_cella tree_minimum(Ptr_cella x){
-  while(x->left != NULL){
+  while(x->left != &Tnil){
     x = x->left;
   }
   return x;
 }
 
 Ptr_cella tree_successor(Ptr_cella x){
-  if(x->right != NULL){
+  if(x->right != &Tnil){
     return tree_minimum(x->right);
   }
   Ptr_cella y = x->p;
 
-  while(y != NULL && x == y->right){
+  while(y != &Tnil && x == y->right){
     x = y;
     y = y->p;
   }
@@ -190,22 +184,17 @@ Ptr_cella tree_successor(Ptr_cella x){
 }
 
 
-Ptr_cella cella_minima(Ptr_cella x){
-  while(x->left != NULL){
-    x = x->left;
-  }
-  return x;
-}
-
 void left_rotate(Albero * T, Ptr_cella x){
   Ptr_cella y = x->right;
+  if(y == &Tnil) return;
+
   x->right = y->left;
 
-  if(y->left != NULL) y->left->p = x;
+  if(y->left != &Tnil) y->left->p = x;
 
   y->p = x->p;
 
-  if(x->p == NULL) T->root = y;
+  if(x->p == &Tnil) T->root = y;
   else if(x == x->p->left)  x->p->left = y;
   else x->p->right = y;
 
@@ -214,35 +203,37 @@ void left_rotate(Albero * T, Ptr_cella x){
 }
 
 void right_rotate(Albero * T, Ptr_cella x){
-  Ptr_cella y = x->right;
-  x->right = y->right;
+  Ptr_cella y = x->left;
+  if(y == &Tnil) return;
 
-  if(y->right != NULL) y->left->p = x;
+  x->left = y->right;
+
+  if(y->right != &Tnil) y->right->p = x;
 
   y->p = x->p;
 
-  if(x->p == NULL) T->root = y;
-  else if(x == x->p->right) x->p->left = y;
-  else x->p->right = y;
+  if(x->p == &Tnil) T->root = y;
+  else if(x == x->p->right) x->p->right = y;
+  else x->p->left = y;
 
-  x->right = x;
+  y->right = x;
   x->p = y;
 }
 
 void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
 
-  if(x != NULL){
+  if(x != &Tnil){
     dealloca_albero(x->left, dealloca_dati);
     dealloca_albero(x->right, dealloca_dati);
     //printf("Ho liberato <%s>!\n", x->key);
     if(dealloca_dati != NULL) (*dealloca_dati)(x->id);
-    //free(x->key);
+    free(x->key);
     free(x);
   }
 }
 
 void stampa_albero_(Ptr_cella x){
-  if(x != NULL){
+  if(x != &Tnil){
     stampa_albero_(x->left);
     if(!x->color) printf("\033[1;31m"); //Set the text to the color red
     else printf("\033[0m");
@@ -252,44 +243,75 @@ void stampa_albero_(Ptr_cella x){
 }
 
 void stampa_albero(Ptr_cella x, int k){
-  if(x != NULL){
-    
+  if(x != &Tnil){
     stampa_albero(x->left, k + 1);
-
     if(!x->color) printf("\033[1;31m"); //Set the text to the color red
     else printf("\033[0m");
     printf("%d : %d -> %s\n", k, x->id, x->key);
-
     stampa_albero(x->right, k + 1);
   }
 }
 
 Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z){
-  Ptr_cella x, y;
 
-  if(z->left == NULL || z->right == T->null){
-    y = z;
+  Ptr_cella rmv, temp;
+
+  // Se la cella non ha sotto-alberi allora basta rimuoverla
+  // altrimenti andiamo a cercare la cella successiva così da sapere che valore 
+  // andare a sostituire in z.
+  if(z->left == &Tnil || z->right == &Tnil){
+    rmv = z;
   }
-  else y = tree_successor(z);
- 
-  if(y->left != NULL) x = y->left;
-  else x = y->right;
+  else{
+    rmv = tree_successor(z);
+  } 
   
-  if(x != NULL) x->p = y->p;  
+  // Se la cella da rimuovere ha un ramo sinistro andiamo a salvare
+  // il puntatore al ramo sennò salviamo quello destro 
+  if(rmv->left != &Tnil){
+    temp = rmv->left;
+  }
+  else{
+    temp = rmv->right;
+  }
 
-  if (y->p == NULL) T->root = x;
-  else if (y == y->p->left) y->p->left = x;
-  else y->p->right = x;
+  // Andiamo a dire al sotto-albero che adesso la sua cella padre è quella di rmv
+  if(temp != &Tnil){
+    temp->p = rmv->p;
+  }
 
-  if(y != z) z->key = y->key;
-  if(y->color == BLACK) rb_delete_fixup(T,x);
-  return y;
+  // Se la cella da rimuvore non ha un padre allora significa che bisgna andare a sostituire
+  // la radice dell'albero con il nostro sottalbero salvato, sennò se la cella da rimuovere fa 
+  // parte di un sottoalbero sinistro/destro mettiamo il sotto-albero a sinistra/destra.
+  if(rmv->p == &Tnil){
+    T->root = temp;
+  }
+  else if(rmv == rmv->p->left){
+    rmv->p->left = temp;
+  }
+  else{
+    rmv->p->right = temp;
+  }
+
+  // Faccio uno swap dei dati perchè sennò potrei avere problemi con una successiva free
+  if(rmv != z){
+    char * rmvKey = rmv->key;
+    rmv->key = z->key;
+    z->key = rmvKey;
+
+    int t = z->id;
+    z->id = rmv->id;
+    rmv->id = t;
+  }
+
+  if(rmv->color == BLACK) rb_delete_fixup(T, temp);
+  return rmv;
 }
 
 void rb_delete_fixup(Albero * T, Ptr_cella x){
 
-  if(x == NULL) return;  
-  if(x->color == RED || x->p == NULL) x->color = BLACK; // Caso 0
+  if(x == &Tnil) return;  
+  if(x->color == RED || x->p == &Tnil) x->color = BLACK; // Caso 0
   else if(x == x->p->left){
 
     Ptr_cella w = x->p->right;
@@ -317,7 +339,7 @@ void rb_delete_fixup(Albero * T, Ptr_cella x){
     }
   }
   
-  else{
+  else {
      Ptr_cella w = x->p->left;
   
     if(w->color == RED){

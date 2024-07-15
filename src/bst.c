@@ -1,40 +1,10 @@
-//#define EXEC 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdbool.h>
 
-#ifdef EXEC
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-  #include <stdarg.h>
-  #include <stdbool.h>
-  
-  #include "myTypes.c"
-#endif
-
-typedef struct Cella{
-  char * key;
-  int id;
-
-  struct Cella * p;
-  struct Cella * left;
-  struct Cella * right;
-
-} cella_t;
-
-typedef cella_t* Ptr_cella; 
-
-typedef struct{
-  Ptr_cella root;
-} Albero;
-
-Ptr_cella alloca_cella();
-Ptr_cella init_cella(char * k, int id);
-bool valore_minore(char * k1, char * k2);
-Ptr_cella cerca_cella(Ptr_cella cl, char * k);
-void aggiungi_cella(Albero * T, Ptr_cella elem);
-Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z);
-void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int));
-void stampa_albero(Ptr_cella x);
-
+#include "bst.h"
 
 Ptr_cella alloca_cella(){
   Ptr_cella out = malloc(sizeof(cella_t));
@@ -197,15 +167,16 @@ void dealloca_albero(Ptr_cella x, void (*dealloca_dati) (int)){
   }
 }
 
-void stampa_albero(Ptr_cella x){
+void stampa_albero(Ptr_cella x, int k){
   if(x != NULL){
-    stampa_albero(x->left);
-    printf("%d -> %s\n", x->id, x->key);
-    stampa_albero(x->right);
+    stampa_albero(x->left, k + 1);
+    printf("%d : %d -> %s\n", k, x->id, x->key);
+    stampa_albero(x->right, k + 1);
   }
 }
 
-#ifdef EXEC
+#if 0
+
   int main() {
     
     Albero T = {
