@@ -4,8 +4,12 @@ file(){
   set -xe
 
   CFLAGS="-Wall -Wextra -std=gnu11 -O2 -g3"
-  #DEBUG="-fsanitize=address"
-  DEBUG=""
+  if [[ $2 == 0 ]]; then
+    DEBUG=""
+  else
+    DEBUG="-fsanitize=address"
+  fi
+
   DFLAGS="build/*.o -lm" #-lX11
   NAME=$1
   

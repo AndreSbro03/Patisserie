@@ -6,6 +6,14 @@
 
 #define STRMAXLEN 255 + 1
 
+typedef enum {
+  AGG = 1,
+  RMV,
+  RIF,
+  ORD,
+  END,
+} Istr;
+
 typedef unsigned int uint;
 
 typedef struct Nodo{
@@ -30,6 +38,11 @@ typedef struct {
   Ptr_token tail;
   uint len;
 } Input;
+
+typedef struct {
+  Istr istr;
+  char * nome;
+} inpHeader;
 
 typedef struct {  
   int ingId;
@@ -103,13 +116,6 @@ typedef struct {
   uint len;
 } Corriere;
 
-typedef enum {
-  AGG = 1,
-  RMV,
-  RIF,
-  ORD,
-  END,
-} Istr;
 
 #define BLACK true
 #define RED false
@@ -474,9 +480,51 @@ void rb_delete_fixup(Albero * T, Ptr_cella x){
   }
 }
 
+//quicksort
+void swap(Ordine * a, int i1, int i2){
+    //printf("%d %d\n", i1, i2);
+    Ordine t = a[i1];
+    a[i1] = a[i2];
+    a[i2] = t;
+}
+
+int partition(Ordine * a, int p, int r){
+
+    Ordine x = a[r];
+    int i = p - 1;
+
+    for(int j = p; j < r; ++j){
+      if(a[j].peso > x.peso){
+        i = i + 1;
+        swap(a, i, j);
+      }
+      else if(a[j].peso == x.peso){
+        if(a[j].t <= x.t){
+          i = i + 1;
+          swap(a, i, j);
+        }
+      }
+    }
+    swap(a, i + 1, r);
+
+    return i + 1;
+}
+
+void quicksort(Ordine * a, int p, int r){
+    if(p < r){
+        int q = partition(a, p, r);
+        quicksort(a, p, q - 1);
+        quicksort(a, q + 1, r);
+    }
+}
+
+
 // GESTIONE INPUT 
-Input analizza_input();
-int esegui_input(Input inp);
+Input get_input_line();
+char * get_token(bool * endCommand);
+void seek_eol();
+inpHeader get_input_header();
+void esegui_input(inpHeader h);
 CompRicetta * input_to_comp_ricetta(Input * inp, uint * len);
 void dealloca_input(Input * inp);
 void input_enqueue(Input * inp, Ptr_token data);
@@ -524,42 +572,6 @@ void ripristina_corriere();
 /*
  * VARIABILI GLOBALI
 */
-void swap(Ordine * a, int i1, int i2){
-    //printf("%d %d\n", i1, i2);
-    Ordine t = a[i1];
-    a[i1] = a[i2];
-    a[i2] = t;
-}
-
-int partition(Ordine * a, int p, int r){
-
-    Ordine x = a[r];
-    int i = p - 1;
-
-    for(int j = p; j < r; ++j){
-      if(a[j].peso > x.peso){
-        i = i + 1;
-        swap(a, i, j);
-      }
-      else if(a[j].peso == x.peso){
-        if(a[j].t <= x.t){
-          i = i + 1;
-          swap(a, i, j);
-        }
-      }
-    }
-    swap(a, i + 1, r);
-
-    return i + 1;
-}
-
-void quicksort(Ordine * a, int p, int r){
-    if(p < r){
-        int q = partition(a, p, r);
-        quicksort(a, p, q - 1);
-        quicksort(a, q + 1, r);
-    }
-}
 
 int t = 0;
 bool end_program = false;
@@ -600,7 +612,7 @@ void sort_corriere(Corriere * c) {
 
 int main(){
 
-  Input input = analizza_input();
+  Input input = get_input_line();
   init_corriere(&input);
 
   while(!end_program){
@@ -611,11 +623,11 @@ int main(){
       ripristina_corriere();
     }
 
-    input = analizza_input();
-    int istr = esegui_input(input);
+    inpHeader h = get_input_header();
+    esegui_input(h);
 
    
-    if(istr == END) end_program = true;
+    if(h.istr == END) end_program = true;
     else{
       t++;
     } 
@@ -635,175 +647,165 @@ int main(){
 }
 
 // Ritorna il numero dell'istruzione eseguita, se negativo allora si è verificato un problema nella relativa isturione
-int esegui_input(Input inp){
+void esegui_input(inpHeader h){
 
-  int out = 0;
+  Input inp = {.head = NULL, .tail = NULL, .len = 0};
+  int out, rcId;
   
-  if(inp.len == 0){
-    //printf("Input vuoto!\n");
-    return END;
-  }
+  switch (h.istr) {
 
-  char * istr = input_get_token(&inp);
-  
-  //TODO: se vuoi velocizzare leggermente il tempo puoi al posto che usare strcmp andare semplicemente a vedere la 
-  //      terza lettera del comando ("g", "m", "f", "d").
-  if(strcmp(istr, "aggiungi_ricetta") == 0){
+    case AGG:
 
-    char * nome = input_get_token(&inp);
+      if(cerca_ricetta(h.nome) >= 0){
+        //printf("Esiste già una ricetta chiamata \"%s\".\n", nome);
+        printf("ignorato\n");
+        free(h.nome);
+        seek_eol();
+      }
+      else{
+        inp = get_input_line();
+        uint len;
+        CompRicetta * comp = input_to_comp_ricetta(&inp, &len);
+        aggiungi_ricetta(h.nome, comp, len);
+        printf("aggiunta\n");
+      }
 
-    if(cerca_ricetta(nome) >= 0){
-      //printf("Esiste già una ricetta chiamata \"%s\".\n", nome);
-      printf("ignorato\n");
-      out = -AGG;
-      free(nome);
-    }
-    else{
-      uint len;
-      CompRicetta * comp = input_to_comp_ricetta(&inp, &len);
-      aggiungi_ricetta(nome, comp, len);
-      printf("aggiunta\n");
-      out = AGG;
-    }
+      break;
 
-    //free(nome);
-  }
+    case RMV:
 
-  else if(strcmp(istr, "rimuovi_ricetta") == 0){
+      out = rimuovi_ricetta(h.nome);
 
-    char * nome = input_get_token(&inp);
-    int out = rimuovi_ricetta(nome);
+      if(out == 0) printf("rimossa\n");
+      else if(out == 1) printf("non presente\n");
+      else printf("ordini in sospeso\n");
 
-    if(out == 0) printf("rimossa\n");
-    else if(out == 1) printf("non presente\n");
-    else printf("ordini in sospeso\n");
+      free(h.nome);  
 
-    free(nome);  
-    out = RMV;
-  }
+      break;
 
-  else if(strcmp(istr, "rifornimento") == 0){
+    case RIF:
 
-    char * temp;
+      inp = get_input_line();
+      char * temp;
+      size_t nLotti = inp.len/3;
 
-    size_t nLotti = (inp.len - 1)/3;
+      for(size_t i = 0; i < nLotti; ++i){
+        // vai a prendere l'id dell'ingrediente sapendo il Nome
+        temp = input_get_token(&inp);
+        int ingId = aggiungi_ingrediente(temp);
 
-    for(size_t i = 0; i < nLotti; ++i){
-      // vai a prendere l'id dell'ingrediente sapendo il Nome
-      temp = input_get_token(&inp);
-      int ingId = aggiungi_ingrediente(temp);
+        // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
+        magazzino.sez[ingId].reStock = t;
 
-      // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
-      magazzino.sez[ingId].reStock = t;
+        Ptr_lotto lt = malloc(sizeof(lotto_t));
 
-      Ptr_lotto lt = malloc(sizeof(lotto_t));
+        temp = input_get_token(&inp);
+        lt->qnt = atoi(temp);
+        free(temp);
 
-      temp = input_get_token(&inp);
-      lt->qnt = atoi(temp);
-      free(temp);
+        temp = input_get_token(&inp);
+        lt->scadenza = atoi(temp);
+        free(temp);
 
-      temp = input_get_token(&inp);
-      lt->scadenza = atoi(temp);
-      free(temp);
+        lt->next = NULL;
 
-      lt->next = NULL;
+        // vai a vedere la linked list corrispondente e aggiungi l'ingrediente in ordine 
+        // di scadenza
+        aggiungi_lotto(lt, ingId);
+      }
 
-      // vai a vedere la linked list corrispondente e aggiungi l'ingrediente in ordine 
-      // di scadenza
-      aggiungi_lotto(lt, ingId);
-    }
+      // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente 
+      // che è appena stato rifornito
+      Ptr_ordine prec = NULL;
+      for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
+        
+        if(magazzino.sez[corr->ord.missIng].reStock == t){
 
-    // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente 
-    // che è appena stato rifornito
-    Ptr_ordine prec = NULL;
-    for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
-      
-      if(magazzino.sez[corr->ord.missIng].reStock == t){
+          int newMissIng = -1;
+          if(ci_sono_ingr(corr->ord, &newMissIng)){
+            prepara_ordine(corr->ord, true);
 
-        int newMissIng = -1;
-        if(ci_sono_ingr(corr->ord, &newMissIng)){
-          prepara_ordine(corr->ord, true);
+            if(prec != NULL){
+              prec->next = corr->next;
+              free(corr);
+              corr = prec;
 
-          if(prec != NULL){
-            prec->next = corr->next;
-            free(corr);
-            corr = prec;
+              if(prec->next == NULL) attesa.sp = prec; 
 
-            if(prec->next == NULL) attesa.sp = prec; 
-
+              prec = corr;
+              corr = corr->next;
+            }
+            else{
+              dequeue(&attesa);
+              corr = attesa.buff;
+              if(corr == NULL) break;
+              prec = NULL;
+            }
+          }
+          else{
+            corr->ord.missIng = newMissIng;
             prec = corr;
             corr = corr->next;
           }
-          else{
-            dequeue(&attesa);
-            corr = attesa.buff;
-            if(corr == NULL) break;
-            prec = NULL;
-          }
         }
-        else{
-          corr->ord.missIng = newMissIng;
+        else {        
           prec = corr;
           corr = corr->next;
         }
       }
-      else {        
-        prec = corr;
-        corr = corr->next;
-      }
-    }
 
-    printf("rifornito\n");
-    out = RIF;
-  }
-  
-  else if(strcmp(istr, "ordine") == 0){
+      printf("rifornito\n");
+      out = RIF;
 
-    char * nome = input_get_token(&inp);
-    int rcId = cerca_ricetta(nome);
-    free(nome);
+      break;
 
-    if(rcId < 0){
-      //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
-      printf("rifiutato\n");
-      out = -ORD;
-    }
-    else{
-      
-      // Creo l'ordine
-      Ordine ord;
-      
-      ord.rcId = rcId;
-      ord.t = t;
-      ord.missIng = -1;
+    case ORD:
 
-      char * qnt = input_get_token(&inp);
-      ord.qnt = atoi(qnt);
-      free(qnt);
-      
-      // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
-      int missIng;
-      if(ci_sono_ingr(ord, &missIng)){
-        prepara_ordine(ord, false);
+      rcId = cerca_ricetta(h.nome);
+      free(h.nome);
+
+      if(rcId < 0){
+        //printf("Non esiste nessuna ricetta chiamata \"%s\".\n", inp.tokens[1]);
+        printf("rifiutato\n");
+        seek_eol();
       }
       else{
-        //printf("Ordine \"%s\" in attesa.\n", ord.nome);
-        ord.missIng = missIng;
-        aggiungi_ordine(ord, &attesa, false); 
+
+        Input inp = get_input_line();
+        
+        // Creo l'ordine
+        Ordine ord;
+        
+        ord.rcId = rcId;
+        ord.t = t;
+        ord.missIng = -1;
+
+        char * qnt = input_get_token(&inp);
+        ord.qnt = atoi(qnt);
+        free(qnt);
+        
+        // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
+        int missIng;
+        if(ci_sono_ingr(ord, &missIng)){
+          prepara_ordine(ord, false);
+        }
+        else{
+          //printf("Ordine \"%s\" in attesa.\n", ord.nome);
+          ord.missIng = missIng;
+          aggiungi_ordine(ord, &attesa, false); 
+        }
+        printf("accettato\n");
+        out = ORD;
       }
-      printf("accettato\n");
-      out = ORD;
-    }
 
-  }
+      break;
 
-  else{
-    out = END;
+    case END:
+      break;
   }
  
-  free(istr);
-  dealloca_input(&inp);
-  return out;
+  //dealloca_input(&inp);
 }
 
 
@@ -889,9 +891,95 @@ char * input_get_token(Input * inp){
   return out;
 }
 
+inpHeader get_input_header(){
+
+  inpHeader out = {.istr = END, .nome = NULL};
+  
+  Nome istr;
+  if(scanf("%s", istr) == EOF) return out;
+
+  //La scanf lascia sempre uno spazio dopo oppure un \n, lo skippiamo
+  char unused = getchar();
+  (void) unused;
+
+  //Sappiamo che il terzo carattere è univoco per ogni comando
+  switch (istr[2]) {
+    case 'g': 
+      //ag[g]iungi
+      out.istr = AGG;
+      out.nome = get_token(NULL);
+      break;
+      
+    case 'm':
+      //ri[m]uovi
+      out.istr = RMV;
+      out.nome = get_token(NULL);
+      break;
+
+    case 'f':
+      //ri[f]ornimento
+      out.istr = RIF;
+      break;
+
+    case 'd':
+      //or[d]ine 
+      out.istr = ORD;
+      out.nome = get_token(NULL);
+      break;
+
+    default:
+      printf("Comando non riconosciuto");
+      break;
+  }
+
+  return out;  
+}
+
+void seek_eol(){
+  while(getchar() != '\n');
+}
+
+// Legge una stringa da stdin e copia il contenuto nel puntatore passato come paramentro
+// se la stringa era l'ultima della riga o del file ritorna true;
+char * get_token(bool * endCommand){
+  
+  Nome token = "";
+  bool endToken = false;
+  bool _endCommand = false;
+  size_t idx = 0;
+
+  for(;!endToken; ++idx){
+
+    char x = getchar();
+
+    if(x == '\n' || x == EOF){
+      // COMMAND IS FINISH
+      _endCommand = true;
+      x = ' ';
+    }      
+    if(x == ' '){
+      // TOKEN IS END
+      endToken = true;
+      x = '\0';
+    }
+    token[idx] = x;
+  }
+
+  char * out = memcpy(
+    malloc(sizeof(char) * idx), 
+    token, 
+    sizeof(char) * idx
+  );
+
+  if(endCommand != NULL) *endCommand = _endCommand; 
+
+  return out;
+
+}
+
 //Legge una riga di input di lunghezza massima COMMANDMAXLEN e ritorna uno struct contenente la quantità
 //di tokens e un puntatore all'array che li contiene
-Input analizza_input(){
+Input get_input_line(){
 
   Input out = {
     .head = NULL,
@@ -900,44 +988,19 @@ Input analizza_input(){
   };
 
   bool endCommand = false;
-  while(!endCommand){
-  
-    Nome token = "";
-    bool endToken = false;
 
-    for(size_t idx = 0; !endToken; ++idx){
-
-      char x = getchar();
-
-      if(x == '\n' || x == EOF){
-        // COMMAND IS FINISH
-        endCommand = true;
-        x = ' ';
-      }      
-      if(x == ' '){
-        // TOKEN IS END
-        endToken = true;
-        x = '\0';
-      }
-      token[idx] = x;
-    }
-
+  while (!endCommand) {
+    
     Ptr_token ptk = malloc(sizeof(token_t));
     if(ptk == NULL){
       perror("Realloc failed!");
       exit(EXIT_FAILURE);
     }
-
-
-    ptk->tk = memcpy(
-      malloc(sizeof(char) * (strlen(token) + 1)), 
-      token, 
-      sizeof(char) * (strlen(token) + 1)
-    );
-
+    
+    ptk->tk = get_token(&endCommand);
     ptk->next = NULL;
     input_enqueue(&out, ptk);
-
+  
     out.len++;
   }
 
@@ -982,8 +1045,7 @@ int aggiungi_ingrediente(char * ing){
 //Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
 //e ritorna un array di componenti della ricetta
 CompRicetta * input_to_comp_ricetta(Input * inp, uint * dim){
-  size_t numParametri = (inp->len - 2); // Numero di parametri rimasti dopo aver letto l'istruzione ed il Nome
-  *dim = numParametri / 2;// Numero di coppie Ingrediente Quantità
+  *dim = inp->len / 2;// Numero di coppie Ingrediente Quantità
   CompRicetta * comp = malloc(sizeof(CompRicetta) * (*dim));
 
   if(comp == NULL){
@@ -991,16 +1053,13 @@ CompRicetta * input_to_comp_ricetta(Input * inp, uint * dim){
     exit(EXIT_FAILURE);
   }
 
-  for(size_t i = 0; i < numParametri; i += 2){
-    int idx = i * 0.5;
+  for(size_t i = 0; i < *dim; i += 1){
 
     char * nome = input_get_token(inp);
-    comp[idx].ingId = aggiungi_ingrediente(nome);
+    comp[i].ingId = aggiungi_ingrediente(nome);
 
-    //magazzino.sez[comp[idx].ingId].usedBy += 1;
-    
     char * qnt = input_get_token(inp);
-    comp[idx].qnt = atoi(qnt);
+    comp[i].qnt = atoi(qnt);
     free(qnt);
   }
 

@@ -3,6 +3,14 @@
 
 #include <stdbool.h>
 
+typedef enum {
+  AGG = 1,
+  RMV,
+  RIF,
+  ORD,
+  END,
+} Istr;
+
 #define STRMAXLEN 255 + 1
 
 typedef unsigned int uint;
@@ -16,8 +24,13 @@ typedef nodo_t * Ptr_nodo;
 
 typedef char Nome[STRMAXLEN];
 
+typedef union {
+  char * string;
+  int Int;
+} Data;
+
 typedef struct Token{
-  char * tk; 
+  Data tk; 
   struct Token * next;
 
 } token_t;
@@ -29,6 +42,11 @@ typedef struct {
   Ptr_token tail;
   uint len;
 } Input;
+
+typedef struct {
+  Istr istr;
+  char * nome;
+} inpHeader;
 
 typedef struct {  
   int ingId;
@@ -105,12 +123,6 @@ typedef struct {
   uint len;
 } Corriere;
 
-typedef enum {
-  AGG = 1,
-  RMV,
-  RIF,
-  ORD,
-  END,
-} Istr; 
+
 
 #endif
