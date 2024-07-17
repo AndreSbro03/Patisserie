@@ -13,35 +13,14 @@ typedef enum {
 
 #define STRMAXLEN 255 + 1
 
-typedef unsigned int uint;
-
-typedef struct Nodo{
-  int val;
-  struct Nodo * next;
-} nodo_t;
-
-typedef nodo_t * Ptr_nodo;
-
-typedef char Nome[STRMAXLEN];
-
 typedef union {
-  char * string;
   int Int;
+  char * String;
 } Data;
 
-typedef struct Token{
-  Data tk; 
-  struct Token * next;
+typedef unsigned int uint;
 
-} token_t;
-
-typedef token_t * Ptr_token;
-
-typedef struct {
-  Ptr_token head;
-  Ptr_token tail;
-  uint len;
-} Input;
+typedef char Nome[STRMAXLEN];
 
 typedef struct {
   Istr istr;
@@ -52,45 +31,11 @@ typedef struct {
   int ingId;
   int qnt;
 } CompRicetta;
- 
-typedef struct {
-  char * nome;
-  CompRicetta * comp;
-  uint len;
-} Ricetta;
 
 typedef struct {
-  Ricetta * rts;
-  uint len;
-} Ricettario;
-
-typedef struct Lotto{
   int qnt;
   int scadenza;
-  struct Lotto * next;
-
 } lotto_t;
-
-typedef lotto_t * Ptr_lotto;
-
-typedef struct {
-  Ptr_lotto lt;
-  char * nomeIng;
-  uint ingId;
-  //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
-  int qnt;
-  
-  int reStock; // t dell'ultimo restock 
-} Sezione;
-
-// Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
-// La coppia (ingrediente,indice) verrà salvata in una hash table. l'array dinamico conterrà
-// delle linked list di lotti.
-
-typedef struct {
-  Sezione * sez;
-  uint len;
-} Magazzino;
 
 typedef struct {
   //TODO: ricontrolla che forse era meglio con la ricetta già salvata
@@ -123,6 +68,47 @@ typedef struct {
   uint len;
 } Corriere;
 
+typedef union {
+  int Int;
+  lotto_t Lotto;
+  CompRicetta Cr;
+} Value;
 
+typedef struct Nodo{
+  Value val;
+  struct Nodo * next;
+} nodo_t;
+
+typedef nodo_t * Ptr_nodo;
+
+typedef struct {
+  char * nome;
+  CompRicetta * comp;
+  uint len;
+} Ricetta;
+
+typedef struct {
+  Ricetta * rts;
+  uint len;
+} Ricettario;
+
+typedef struct {
+  Ptr_nodo lt;
+  char * nomeIng;
+  uint ingId;
+  //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
+  int qnt;
+  
+  int reStock; // t dell'ultimo restock 
+} Sezione;
+
+// Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
+// La coppia (ingrediente,indice) verrà salvata in una hash table. l'array dinamico conterrà
+// delle linked list di lotti.
+
+typedef struct {
+  Sezione * sez;
+  uint len;
+} Magazzino;
 
 #endif

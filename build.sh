@@ -10,12 +10,19 @@ file(){
     DEBUG="-fsanitize=address"
   fi
 
-  DFLAGS="build/*.o -lm" #-lX11
+ 
+
+  if [[ $1 == 'main' ]]; then
+    #gcc -o build/bst.o -c src/bst.c
+    gcc -o build/algoritmi.o -c src/algoritmi.c
+    DFLAGS="build/*.o -lm" #-lX11
+  else
+    #rm build/*.o
+    DFLAGS="-lm"
+  fi
+  
   NAME=$1
   
-  rm build/*.o
-  #gcc -o build/bst.o -c src/bst.c
-  gcc -o build/algoritmi.o -c src/algoritmi.c
   gcc $CFLAGS $DEBUG -o $NAME src/$NAME.c $DFLAGS
   mv $NAME ~/Desktop/API/progetto/build/
 }

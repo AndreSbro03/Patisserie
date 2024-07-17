@@ -8,16 +8,16 @@
 #include "algoritmi.h"
 
 // GESTIONE INPUT 
-Data get_token(bool isString, bool * endCommand);
+char * get_token(bool * endCommand);
 void seek_eol();
 inpHeader get_input_header();
 void esegui_input(inpHeader h);
-CompRicetta * get_comp_ricetta(uint * len);
+Ptr_nodo get_comp_ricetta();
 void malloc_failed();
 
 // GESTIONE RICETTARIO
 int cerca_ricetta(char * nome);
-void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len);
+void aggiungi_ricetta(char * nome, Ptr_nodo cr);
 void dealloca_ricetta(int id);
 int rimuovi_ricetta(char * nome);
 int ricettario_push(Ricetta rt);
@@ -66,6 +66,7 @@ Ricettario ricettario = {.rts = NULL, .len = 0};
 Albero ingredienti = {.root = &Tnil};
 int maxId = -1;
 
+Ptr_nodo validIngId = NULL;
 Ptr_nodo validRctId = NULL;
 
 Magazzino magazzino = {
@@ -143,9 +144,8 @@ void esegui_input(inpHeader h){
         seek_eol();
       }
       else{
-        uint len;
-        CompRicetta * comp = get_comp_ricetta(&len);
-        aggiungi_ricetta(h.nome, comp, len);
+        Ptr_nodo comp = get_comp_ricetta();
+        aggiungi_ricetta(h.nome, comp);
         printf("aggiunta\n");
       }
 
@@ -228,7 +228,7 @@ void esegui_input(inpHeader h){
           .rcId = rcId,
           .t = t,
           .missIng = -1,
-          .qnt = get_token(0, NULL).Int
+          .qnt = get_int(NULL)
         };
 
         // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
@@ -275,12 +275,11 @@ int ricettario_push(Ricetta rt){
 //  - "nome" nome della ricetta
 //  - "cr" lista di componenti della ricetta
 //
-void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
+void aggiungi_ricetta(char * nome, Ptr_nodo cr){
 
   Ricetta rt;
   rt.nome = nome;
   rt.comp = cr;
-  rt.len = len;
 
   aggiungi_cella(&idxRicettario, init_cella(nome, ricettario_push(rt)));
 
@@ -302,13 +301,13 @@ inpHeader get_input_header(){
     case 'g': 
       //ag[g]iungi
       out.istr = AGG;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
       
     case 'm':
       //ri[m]uovi
       out.istr = RMV;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
 
     case 'f':
@@ -319,7 +318,7 @@ inpHeader get_input_header(){
     case 'd':
       //or[d]ine 
       out.istr = ORD;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
 
     default:
@@ -379,6 +378,22 @@ Data get_token(bool isString, bool * endCommand){
 
 }
 
+int get_int(bool * endCommand){
+  
+  bool _endCommand = false;
+
+  Nome out;
+  (void) scanf("%s", out);
+
+  char x = getchar();
+  _endCommand = (x == '\n' || x == EOF);
+
+  if(endCommand != NULL) *endCommand = _endCommand; 
+
+  return atoi(out);
+
+}
+
 void malloc_failed(){
   perror("Malloc failed!");
   exit(EXIT_FAILURE);
@@ -390,6 +405,15 @@ int aggiungi_ingrediente(char * ing){
   Ptr_cella x = cerca_cella(ingredienti.root, ing);
 
   if(x == NULL){
+
+    if(validIngId != NULL){
+      Value id;
+      validIngId = pop_val(validIngId, &id);
+      aggiungi_cella(&ingredienti, init_cella(ing, id.Int));  
+      return id.Int;
+    }
+    else{
+      
       maxId += 1;
       aggiungi_cella(&ingredienti, init_cella(ing, maxId));
 
@@ -399,6 +423,7 @@ int aggiungi_ingrediente(char * ing){
       }
 
       return maxId;
+    }
   }
     
   free(ing);
@@ -407,43 +432,22 @@ int aggiungi_ingrediente(char * ing){
 
 //Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
 //e ritorna un array di componenti della ricetta
-CompRicetta * get_comp_ricetta(uint * len){
+Ptr_nodo get_comp_ricetta(){
   
   Ptr_nodo out = NULL;
   bool endCommand = false;
-
-  size_t _len = 0; 
   while(!endCommand){
 
-    char * nome = get_token(1, NULL).String;
+    char * nome = get_token(NULL);
 
     CompRicetta c = {
       .ingId = aggiungi_ingrediente(nome), 
-      .qnt = get_token(0, &endCommand).Int
+      .qnt = get_int(&endCommand)
     };
-
-    _len++;
 
     out = push_val(out, (Value) c);
   }
-
-  CompRicetta * comp = malloc(sizeof(CompRicetta) * _len);
-  
-  size_t idx = 0;
-  Ptr_nodo prec = NULL;
-  for(Ptr_nodo temp = out; temp != NULL; temp = temp->next){
-    comp[idx] = temp->val.Cr;
-    if(prec != NULL) free(prec);
-    prec = temp;
-    idx++;
-  }
-  free(prec);
-
-  if(len != NULL) *len = _len; 
-
-  return comp;
-  
-  //return out;
+  return out;
 }
 
 void deallocaLL(Ptr_nodo testa){
@@ -455,8 +459,8 @@ void deallocaLL(Ptr_nodo testa){
 }
 
 void dealloca_ricetta(int id){
-  free(ricettario.rts[id].comp);
-  //deallocaLL(ricettario.rts[id].comp);
+  //free(ricettario.rts[id].comp);
+  deallocaLL(ricettario.rts[id].comp);
 }
 
 // Ritorna la nuova testa
@@ -561,17 +565,17 @@ void aggiungi_lotti(){
   while (!endCommand) {
 
     // vai a prendere l'id dell'ingrediente sapendo il Nome
-    int ingId = aggiungi_ingrediente(get_token(1, NULL).String);
+    int ingId = aggiungi_ingrediente(get_token(NULL));
 
     // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
     magazzino.sez[ingId].reStock = t;
 
     Ptr_nodo lt = malloc(sizeof(nodo_t));
 
-    int qnt = get_token(0, NULL).Int;
+    int qnt = get_int(NULL);
 
     lt->val.Lotto.qnt = qnt;
-    lt->val.Lotto.scadenza = get_token(0, &endCommand).Int;
+    lt->val.Lotto.scadenza = get_int(&endCommand);
     lt->next = NULL;
     
     // Vado ad aggiungere alla linked list della sezione il lotto
@@ -603,8 +607,8 @@ void dealloca_magazzino(){
 
 //inizializza il corriere e libera l'input subito
 void init_corriere(){
-  corriere.t = get_token(0, NULL).Int;
-  corriere.cap = get_token(0, NULL).Int;
+  scanf("%ud", &corriere.t);
+  scanf("%ud", &corriere.cap);
 }
 
 // Rimuove l'elemento e ritorna il successivo
@@ -635,15 +639,15 @@ void rimuovi_scaduti(Sezione * sez){
 int controlla_scorte(Ordine ord){
 
   Ricetta rc = ricettario.rts[ord.rcId];
-  for(size_t i = 0; i < rc.len; ++i){
-    size_t id = rc.comp[i].ingId;
-    
+  for(Ptr_nodo temp = rc.comp; temp != NULL; temp = temp->next){
+    size_t id = temp->val.Cr.ingId;
+
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
     if(magazzino.sez[id].lt == NULL) return id;
     rimuovi_scaduti(&magazzino.sez[id]);
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return id;
+    if(magazzino.sez[id].qnt < (temp->val.Cr.qnt * ord.qnt)) return id;
   }
 
   return -1;
@@ -733,10 +737,10 @@ void prepara_ordine(Ordine ord, bool rifornimento){
   // Il check per vedere se ci sono gli ingredienti lo do per già fatto
   Ricetta rc = ricettario.rts[ord.rcId]; 
   int peso_tot = 0;
-  for(size_t i = 0; i < rc.len; ++i){
+  for(Ptr_nodo temp = rc.comp; temp != NULL; temp = temp->next){
 
-    int id = rc.comp[i].ingId;
-    int peso = rc.comp[i].qnt * ord.qnt;
+    int id = temp->val.Cr.ingId;
+    int peso = temp->val.Cr.qnt * ord.qnt;
     preleva_ingredienti(&magazzino.sez[id], peso); 
     peso_tot += peso;
   }
