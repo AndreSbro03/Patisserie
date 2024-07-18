@@ -37,8 +37,6 @@ massif(){
   mv massif.out.* massif_09
   valgrind --tool=massif ./build/$NAME  < Tests/open10.txt 
   mv massif.out.* massif_10
-  valgrind --tool=massif ./build/$NAME  < Tests/open11.txt 
-  mv massif.out.* massif_11
 }
 
 callgrind(){
@@ -51,8 +49,6 @@ callgrind(){
   mv callgrind.out.* callgrind_09
   valgrind --tool=callgrind ./build/$NAME < Tests/open10.txt 
   mv callgrind.out.* callgrind_10
-  valgrind --tool=callgrind ./build/$NAME < Tests/open11.txt 
-  mv callgrind.out.* callgrind_11
 }
 
 "$@"

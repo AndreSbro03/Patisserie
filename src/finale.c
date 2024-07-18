@@ -519,6 +519,7 @@ void quicksort(Ordine * a, int p, int r){
     }
 }
 
+
 // GESTIONE INPUT 
 Data get_token(bool isString, bool * endCommand);
 void seek_eol();
@@ -545,10 +546,8 @@ Ptr_nodo pop_val(Ptr_nodo testa, Value * out);
 void espandi_magazzino(int ingId, char * nomeIng);
 Ptr_nodo inserisci_per_scadenza(Ptr_nodo lt, Ptr_nodo testaLt);
 void aggiungi_lotti();
-void dealloca_lotti(Ptr_nodo testaLt);
 void dealloca_magazzino();
 void rimuovi_scaduti(Sezione * sez);
-Ptr_nodo dealloca_testa(Ptr_nodo testa);
 void preleva_ingredienti(Sezione * sez, int qnt);
 void stampa_magazzino();
 
@@ -983,11 +982,10 @@ Ptr_nodo push_val(Ptr_nodo testa, Value val){
 // Ritorna la nuova testa
 Ptr_nodo pop_val(Ptr_nodo testa, Value * out){
   if(testa == NULL) return NULL;
-  Ptr_nodo trash = testa;
-  testa = testa->next;
-  if(out != NULL) *out = trash->val;
-  free(trash);
-  return testa;
+  Ptr_nodo p = testa->next;
+  if(out != NULL) *out = testa->val;
+  free(testa);
+  return p;
 }
 
 // Rimuove la ricetta se la trova
@@ -1074,40 +1072,34 @@ void aggiungi_lotti(){
 
     // vai a prendere l'id dell'ingrediente sapendo il Nome
     int ingId = aggiungi_ingrediente(get_token(1, NULL).String);
-
-    // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
-    magazzino.sez[ingId].reStock = t;
-
-    Ptr_nodo lt = malloc(sizeof(nodo_t));
-
     int qnt = get_token(0, NULL).Int;
+    uint scad = get_token(0, &endCommand).Int;
 
-    lt->val.Lotto.qnt = qnt;
-    lt->val.Lotto.scadenza = get_token(0, &endCommand).Int;
-    lt->next = NULL;
-    
-    // Vado ad aggiungere alla linked list della sezione il lotto
-    magazzino.sez[ingId].qnt += lt->val.Lotto.qnt;
-    magazzino.sez[ingId].lt = inserisci_per_scadenza(lt, magazzino.sez[ingId].lt);  
+    if(scad > (uint) t){
+      // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
+      Sezione * sez = &magazzino.sez[ingId];
+      if(sez->reStock != t){
+        rimuovi_scaduti(sez);
+        sez->reStock = t;
+      }
+
+      Ptr_nodo lt = malloc(sizeof(nodo_t));
+      lt->val.Lotto.qnt = qnt;
+      lt->val.Lotto.scadenza = scad;     
+      lt->next = NULL;
+      
+      // Vado ad aggiungere alla linked list della sezione il lotto
+      magazzino.sez[ingId].qnt += qnt;
+      magazzino.sez[ingId].lt = inserisci_per_scadenza(lt, sez->lt);  
+    }
   }
-}
-
-void dealloca_lotti(Ptr_nodo testaLt){
-
-  Ptr_nodo prec = NULL;
-  for(Ptr_nodo temp = testaLt; temp != NULL; temp = temp->next){
-    if(prec != NULL) free(prec);
-    prec = temp;
-  }
-
-  if(prec != NULL) free(prec);
 }
 
 void dealloca_magazzino(){
 
   // Dealloca ogni singola serie di lotti
   for(size_t i = 0; i < magazzino.len; ++i){
-    dealloca_lotti(magazzino.sez[i].lt);
+    deallocaLL(magazzino.sez[i].lt);
   }
   // Dealloca le sezioni del magazzino
   free(magazzino.sez);
@@ -1119,26 +1111,22 @@ void init_corriere(){
   corriere.cap = get_token(0, NULL).Int;
 }
 
-// Rimuove l'elemento e ritorna il successivo
-Ptr_nodo dealloca_testa(Ptr_nodo testa){
-  if(testa == NULL) return NULL;
-
-  Ptr_nodo out = testa->next;
-  free(testa);
-  return out;
-}
-
 void rimuovi_scaduti(Sezione * sez){
 
-  Ptr_nodo temp;
-  for(temp = sez->lt; temp != NULL;){
-    if(temp->val.Lotto.scadenza <= t){
-      sez->qnt -= temp->val.Lotto.qnt;
-      temp = dealloca_testa(temp);      
-    } 
-    else break;
+  if(sez->reStock != t){
+
+    Ptr_nodo temp;
+    for(temp = sez->lt; temp != NULL;){
+      if(temp->val.Lotto.scadenza <= t){
+        Value qnt;
+        temp = pop_val(temp, &qnt);
+        sez->qnt -= qnt.Int;
+      } 
+      else break;
+    }
+    sez->lt = temp;
+
   }
-  sez->lt = temp;
 
 }
 
@@ -1149,13 +1137,14 @@ int controlla_scorte(Ordine ord){
   Ricetta rc = ricettario.rts[ord.rcId];
   for(size_t i = 0; i < rc.len; ++i){
     size_t id = rc.comp[i].ingId;
+    Sezione * sez = &magazzino.sez[id];
     
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(magazzino.sez[id].lt == NULL) return id;
-    rimuovi_scaduti(&magazzino.sez[id]);
+    if(sez->lt == NULL) return id;
+    if(sez->reStock != t) rimuovi_scaduti(sez);
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(magazzino.sez[id].qnt < (rc.comp[i].qnt * ord.qnt)) return id;
+    if(sez->qnt < (rc.comp[i].qnt * ord.qnt)) return id;
   }
 
   return -1;
@@ -1174,8 +1163,9 @@ void preleva_ingredienti(Sezione * sez, int qnt){
 
   for(Ptr_nodo temp = sez->lt; temp != NULL;){
     if(temp->val.Lotto.qnt <= left){
-      left -= temp->val.Lotto.qnt;
-      temp = dealloca_testa(temp);
+      Value qnt;
+      temp = pop_val(temp, &qnt);
+      left -= qnt.Int;
     }
     else{
       temp->val.Lotto.qnt -= left;
