@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 #include <stdbool.h>
 
 #define BLACK true
@@ -28,7 +26,7 @@ typedef struct{
 
 Ptr_cella alloca_cella();
 Ptr_cella init_cella(char * k, int id);
-bool valore_minore(char * k1, char * k2);
+int valore_minore(char * k1, char * k2);
 Ptr_cella cerca_cella(Ptr_cella cl, char * k);
 void aggiungi_cella(Albero * T, Ptr_cella elem);
 Ptr_cella rimuovi_cella(Albero * T, Ptr_cella z);
@@ -59,31 +57,36 @@ Ptr_cella init_cella(char * k, int id){
 }
 
 
-//restituisce true se il valore di k1 è minore di quello di k2, se uguali restituisce false
-bool valore_minore(char * k1, char * k2){
+//restituisce 1 se il valore di k1 è minore di quello di k2, se uguali restituisce 0 altrimenti restituisce -1
+int valore_minore(char * k1, char * k2){
   
   int i = 0;
   while(k1[i] != '\0'){
-    if(k2[i] == '\0') return false; //la seconda stringa è più corta della prima
+    if(k2[i] == '\0') return -1; //la seconda stringa è più corta della prima
     
-    if(k1[i] != k2[i]) return (k2[i] > k1[i]); //appena trovo due caratteri discordi ritorno il risutato della disquazione
+    if(k1[i] != k2[i]) return ((k2[i] > k1[i]) ? 1 : -1); //appena trovo due caratteri discordi ritorno il risutato della disquazione
 
     i++;
   }
-  return (k2[i] != '\0'); //se la stringa 2 è non è ancora terminata restituisco ture sennò significa che le due stringhe sono identiche e restituisco false
+  return ((k2[i] != '\0') ? 1 : 0); //se la stringa 2 è non è ancora terminata restituisco true sennò significa che le due stringhe sono identiche e restituisco false
 }
 
 //Cerco la cella contenente una certa chiave nell'albero, se non la trovo ritrono NULL
 Ptr_cella cerca_cella(Ptr_cella cl, char * k){
-  if(cl == &Tnil || strcmp(k, cl -> key) == 0){
-    if(cl == &Tnil) return NULL;
-    else return cl;
+  if(cl == &Tnil){
+    return NULL;
   }
-
-  if(valore_minore(k, cl->key)) 
+  
+  int out = valore_minore(k, cl->key);
+  if(out == 0){
+    return cl;
+  }
+  else if (out > 0){
     return cerca_cella(cl->left, k);
-  else 
+  } 
+  else{    
     return cerca_cella(cl->right, k);
+  }
 
 }
 
@@ -142,7 +145,7 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
   // Vado a cercare il punto dell'albero dove andare ad aggiungere la cella
   while(x != &Tnil){
     y = x;
-    if(valore_minore(elem->key, x->key)){
+    if(valore_minore(elem->key, x->key) > 0){
       x = x->left;
     }
     else{
@@ -154,7 +157,7 @@ void aggiungi_cella(Albero * T, Ptr_cella elem){
 
   //Se l'albero è vuoto
   if(y == &Tnil) T->root = elem;
-  else if(valore_minore(elem->key, y->key)) y->left = elem;  
+  else if(valore_minore(elem->key, y->key) > 0) y->left = elem;  
   else y->right = elem;
   
   elem->color = RED;
@@ -366,51 +369,11 @@ void rb_delete_fixup(Albero * T, Ptr_cella x){
 
   }
 }
-
-
-#ifdef EXEC
-  int main() {
-   
-    Albero T = {
-      .root = NULL,
-    };
-
-    Nome n1 = "ciao";
-    Nome n2 = "aaaa";
-    Nome n3 = "come";
-    Nome n4 = "13243564232";
-    Nome n5 = "bb";
-
-    aggiungi_cella(&T, init_cella(n1, 0));
-    aggiungi_cella(&T, init_cella(n2, 0));
-    aggiungi_cella(&T, init_cella(n3, 0));
-    aggiungi_cella(&T, init_cella(n4, 0));
-    aggiungi_cella(&T, init_cella(n5, 0));
-
-    Nome cerca = "ciao";
-
-    
-    Ptr_cella x = cerca_cella(T.root, cerca);
-    if(x != NULL){
-      printf("Rimosso cella\n");
-      x = rimuovi_cella(&T, x);
-      free(x);
-    }
-      
-    
-    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
-    else printf("Non trovato!\n");    
-    strcpy(cerca, "come");
-    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
-    else printf("Non trovato!\n");
-    strcpy(cerca, "fafueioj");
-    if(cerca_cella(T.root, cerca) != NULL) printf("Trovato!\n");
-    else printf("Non trovato!\n");
-
-    
-    stampa_albero(T.root, 0);
-    dealloca_albero(T.root, NULL);
-
-    return 0;
-  }
-#endif
+/**/
+/*int main(){*/
+/**/
+/*  int out = valore_minore("W0cs111WWWb", "W0cs111WWWWb");*/
+/*  printf("out = %d\n", out);*/
+/**/
+/*  return 0;*/
+/*}*/
