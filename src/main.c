@@ -10,6 +10,7 @@
 // GESTIONE INPUT 
 Data get_token(bool isString, bool * endCommand);
 void seek_eol();
+int toInt(Nome token, uint idx);
 inpHeader get_input_header();
 void esegui_input(inpHeader h);
 CompRicetta * get_comp_ricetta(uint * len);
@@ -332,6 +333,20 @@ void seek_eol(){
   while(getchar() != '\n');
 }
 
+int toInt(Nome token, uint idx){
+
+  const int base = 10;
+  uint pow = 1;
+  int out = 0;
+
+  for(int i = idx - 2; i >= 0; --i){
+    out += (token[i] - '0') * pow;
+    pow *= base;
+  }
+
+  return out;
+}
+
 // Legge una stringa da stdin e copia il contenuto nel puntatore passato come paramentro
 // se la stringa era l'ultima della riga o del file ritorna true;
 Data get_token(bool isString, bool * endCommand){
@@ -339,7 +354,8 @@ Data get_token(bool isString, bool * endCommand){
   Nome token = "";
   bool endToken = false;
   bool _endCommand = false;
-  size_t idx = 0;
+  uint idx = 0;
+  Data out;
 
   for(;!endToken; ++idx){
 
@@ -358,7 +374,6 @@ Data get_token(bool isString, bool * endCommand){
     token[idx] = x;
   }
 
-  Data out;
   if(isString){
     char * outString = memcpy(
       malloc(sizeof(char) * idx), 
@@ -367,8 +382,8 @@ Data get_token(bool isString, bool * endCommand){
     );
     out.String = outString;
   }
-  else{
-    out.Int = atoi(token);
+  else {
+    out.Int = toInt(token, idx);
   }
 
   if(endCommand != NULL) *endCommand = _endCommand; 
@@ -599,8 +614,9 @@ void init_corriere(){
 }
 
 void rimuovi_scaduti(Sezione * sez){
-
-  if(sez->reStock != t){
+  
+  //TODO: sebra più veloce con l'if
+  //if(sez->reStock != t){
 
     Ptr_nodo temp;
     for(temp = sez->lt; temp != NULL;){
@@ -613,7 +629,7 @@ void rimuovi_scaduti(Sezione * sez){
     }
     sez->lt = temp;
 
-  }
+  //}
 
 }
 
@@ -627,8 +643,11 @@ int controlla_scorte(Ordine ord){
     Sezione * sez = &magazzino.sez[id];
     
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(sez->lt == NULL) return id;
-    if(sez->reStock != t) rimuovi_scaduti(sez);
+    if(sez->reStock != t && sez->lt != NULL) {
+      rimuovi_scaduti(sez);
+      //TODO: sembra più veloce senza il restock = t
+      sez->reStock = t;
+    }
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
     if(sez->qnt < (rc.comp[i].qnt * ord.qnt)) return id;

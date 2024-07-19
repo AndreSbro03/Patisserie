@@ -887,7 +887,6 @@ Data get_token(bool isString, bool * endCommand){
   if(endCommand != NULL) *endCommand = _endCommand; 
 
   return out;
-
 }
 
 void malloc_failed(){
