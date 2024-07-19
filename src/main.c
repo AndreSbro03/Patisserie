@@ -333,17 +333,16 @@ void seek_eol(){
   while(getchar() != '\n');
 }
 
+
+// Al posto dell'atoi che fa comandi non utili in questo caso come isDigit e che controlla 
+// che il numero non sia hex o negativo qui andiamo a eseguire direttamente il comando interessato
+// dell'atoi
 int toInt(Nome token, uint idx){
 
-  const int base = 10;
-  uint pow = 1;
   int out = 0;
-
-  for(int i = idx - 2; i >= 0; --i){
-    out += (token[i] - '0') * pow;
-    pow *= base;
+  for(uint i = 0; i < idx - 1; ++i){
+    out = out * 10 + (token[i] - '0');
   }
-
   return out;
 }
 

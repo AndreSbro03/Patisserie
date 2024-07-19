@@ -845,6 +845,17 @@ void seek_eol(){
   while(getchar() != '\n');
 }
 
+int toInt(Nome token, uint idx){
+
+  int out = 0;
+
+  for(int i = 0; i < idx - 1; ++i){
+    out = out * 10 + (token[i] - '0');
+  }
+
+  return out;
+}
+
 // Legge una stringa da stdin e copia il contenuto nel puntatore passato come paramentro
 // se la stringa era l'ultima della riga o del file ritorna true;
 Data get_token(bool isString, bool * endCommand){
@@ -852,7 +863,8 @@ Data get_token(bool isString, bool * endCommand){
   Nome token = "";
   bool endToken = false;
   bool _endCommand = false;
-  size_t idx = 0;
+  uint idx = 0;
+  Data out;
 
   for(;!endToken; ++idx){
 
@@ -871,7 +883,6 @@ Data get_token(bool isString, bool * endCommand){
     token[idx] = x;
   }
 
-  Data out;
   if(isString){
     char * outString = memcpy(
       malloc(sizeof(char) * idx), 
@@ -880,13 +891,14 @@ Data get_token(bool isString, bool * endCommand){
     );
     out.String = outString;
   }
-  else{
-    out.Int = atoi(token);
+  else {
+    out.Int = toInt(token, idx);
   }
 
   if(endCommand != NULL) *endCommand = _endCommand; 
 
   return out;
+
 }
 
 void malloc_failed(){
