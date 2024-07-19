@@ -13,11 +13,6 @@ typedef enum {
 
 #define STRMAXLEN 255 + 1
 
-typedef union {
-  int Int;
-  char * String;
-} Data;
-
 typedef unsigned int uint;
 
 typedef char Nome[STRMAXLEN];

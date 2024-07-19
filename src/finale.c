@@ -14,11 +14,6 @@ typedef enum {
 
 #define STRMAXLEN 255 + 1
 
-typedef union {
-  int Int;
-  char * String;
-} Data;
-
 typedef unsigned int uint;
 
 typedef char Nome[STRMAXLEN];
@@ -519,10 +514,11 @@ void quicksort(Ordine * a, int p, int r){
     }
 }
 
-
 // GESTIONE INPUT 
-Data get_token(bool isString, bool * endCommand);
+char * get_token(bool * endCommand);
+int get_int(bool * endCommand);
 void seek_eol();
+int toInt(Nome token, uint idx);
 inpHeader get_input_header();
 void esegui_input(inpHeader h);
 CompRicetta * get_comp_ricetta(uint * len);
@@ -739,7 +735,7 @@ void esegui_input(inpHeader h){
           .rcId = rcId,
           .t = t,
           .missIng = -1,
-          .qnt = get_token(0, NULL).Int
+          .qnt = get_int(NULL)
         };
 
         // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
@@ -813,13 +809,13 @@ inpHeader get_input_header(){
     case 'g': 
       //ag[g]iungi
       out.istr = AGG;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
       
     case 'm':
       //ri[m]uovi
       out.istr = RMV;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
 
     case 'f':
@@ -830,7 +826,7 @@ inpHeader get_input_header(){
     case 'd':
       //or[d]ine 
       out.istr = ORD;
-      out.nome = get_token(1, NULL).String;
+      out.nome = get_token(NULL);
       break;
 
     default:
@@ -845,26 +841,46 @@ void seek_eol(){
   while(getchar() != '\n');
 }
 
-int toInt(Nome token, uint idx){
 
+// Al posto dell'atoi che fa comandi non utili in questo caso come isDigit e che controlla 
+// che il numero non sia hex o negativo qui andiamo a eseguire direttamente il comando interessato
+// dell'atoi
+int get_int(bool * endCommand){
+  
+  bool endToken = false;
+  bool _endCommand = false;
   int out = 0;
 
-  for(int i = 0; i < idx - 1; ++i){
-    out = out * 10 + (token[i] - '0');
+  while(!endToken) {
+
+    char x = getchar();
+
+    if(x == '\n' || x == EOF){
+      // COMMAND IS FINISH
+      _endCommand = true;
+      x = ' ';
+    }      
+    if(x == ' '){
+      // TOKEN IS END
+      endToken = true;
+    }
+    else {
+      out = out * 10 + (x - '0');
+    }
   }
 
+  if(endCommand != NULL) *endCommand = _endCommand; 
   return out;
 }
 
 // Legge una stringa da stdin e copia il contenuto nel puntatore passato come paramentro
 // se la stringa era l'ultima della riga o del file ritorna true;
-Data get_token(bool isString, bool * endCommand){
+char * get_token(bool * endCommand){
   
   Nome token = "";
   bool endToken = false;
   bool _endCommand = false;
   uint idx = 0;
-  Data out;
 
   for(;!endToken; ++idx){
 
@@ -883,21 +899,15 @@ Data get_token(bool isString, bool * endCommand){
     token[idx] = x;
   }
 
-  if(isString){
-    char * outString = memcpy(
-      malloc(sizeof(char) * idx), 
-      token, 
-      sizeof(char) * idx
-    );
-    out.String = outString;
-  }
-  else {
-    out.Int = toInt(token, idx);
-  }
+  char * outString = memcpy(
+    malloc(sizeof(char) * idx), 
+    token, 
+    sizeof(char) * idx
+  );
 
   if(endCommand != NULL) *endCommand = _endCommand; 
 
-  return out;
+  return outString;
 
 }
 
@@ -937,11 +947,11 @@ CompRicetta * get_comp_ricetta(uint * len){
   size_t _len = 0; 
   while(!endCommand){
 
-    char * nome = get_token(1, NULL).String;
+    char * nome = get_token(NULL);
 
     CompRicetta c = {
       .ingId = aggiungi_ingrediente(nome), 
-      .qnt = get_token(0, &endCommand).Int
+      .qnt = get_int(&endCommand)
     };
 
     _len++;
@@ -1082,9 +1092,9 @@ void aggiungi_lotti(){
   while (!endCommand) {
 
     // vai a prendere l'id dell'ingrediente sapendo il Nome
-    int ingId = aggiungi_ingrediente(get_token(1, NULL).String);
-    int qnt = get_token(0, NULL).Int;
-    uint scad = get_token(0, &endCommand).Int;
+    int ingId = aggiungi_ingrediente(get_token(NULL));
+    int qnt = get_int(NULL);
+    uint scad = get_int(&endCommand);
 
     if(scad > (uint) t){
       // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
@@ -1118,12 +1128,12 @@ void dealloca_magazzino(){
 
 //inizializza il corriere e libera l'input subito
 void init_corriere(){
-  corriere.t = get_token(0, NULL).Int;
-  corriere.cap = get_token(0, NULL).Int;
+  corriere.t = get_int(NULL);
+  corriere.cap = get_int(NULL);
 }
 
 void rimuovi_scaduti(Sezione * sez){
-
+  
   if(sez->reStock != t){
 
     Ptr_nodo temp;
@@ -1151,8 +1161,10 @@ int controlla_scorte(Ordine ord){
     Sezione * sez = &magazzino.sez[id];
     
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(sez->lt == NULL) return id;
-    if(sez->reStock != t) rimuovi_scaduti(sez);
+    if(sez->reStock != t && sez->lt != NULL) {
+      rimuovi_scaduti(sez);
+      //sez->reStock = t;
+    }
 
     // Se gli ingredienti non sono sufficenti ritorno subito false
     if(sez->qnt < (rc.comp[i].qnt * ord.qnt)) return id;
