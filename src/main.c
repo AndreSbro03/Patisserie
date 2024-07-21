@@ -92,7 +92,6 @@ Coda attesa = {.buff = NULL, .sp = NULL};
 
 void sort_corriere(Corriere * c) {
   quicksort(c->buff, 0, c->len - 1);
-  //insertion_sort(c->buff, c->len);
 }
 
 /*
@@ -186,9 +185,7 @@ void esegui_input(inpHeader h){
 
           int newMissIng = -1;
           if(ci_sono_ingr(corr->ord, &newMissIng)){
-            #if STATS
-              num_successi++;
-            #endif
+
             prepara_ordine(corr->ord, true);
 
             if(prec != NULL){
@@ -442,7 +439,7 @@ int aggiungi_ingrediente(char * ing){
 //e ritorna un array di componenti della ricetta
 CompRicetta * get_comp_ricetta(uint * len){
   
-  const uint defDim = 3;
+  const uint defDim = 3; // 3 sembra essere il valore ottimale
   bool endCommand = false;
   CompRicetta * comp = malloc(sizeof(CompRicetta) * defDim);
 
@@ -647,10 +644,6 @@ int controlla_scorte(Ordine ord){
 
   rc->t = t;
 
-  #if STATS
-    num_chiamate_csi++;
-  #endif
-
   for(size_t i = 0; i < rc->len; ++i){
     size_t id = rc->comp[i].ingId;
     Sezione * sez = &magazzino.sez[id];
@@ -678,8 +671,16 @@ int controlla_scorte(Ordine ord){
 }
 
 bool ci_sono_ingr(Ordine ord, int * missIng){
+  #if STATS
+    num_chiamate_csi++;
+  #endif
+
   int out = controlla_scorte(ord); 
   if (missIng != NULL) *missIng = out;
+
+  #if STATS
+    if(out == -1) num_successi++;
+  #endif
   return out == -1;
 }
 

@@ -948,7 +948,7 @@ int aggiungi_ingrediente(char * ing){
 //e ritorna un array di componenti della ricetta
 CompRicetta * get_comp_ricetta(uint * len){
   
-  const uint defDim = 3;
+  const uint defDim = 3; // 3 sembra essere il valore ottimale. Probabilmente è il valor medio di cr X ricette
   bool endCommand = false;
   CompRicetta * comp = malloc(sizeof(CompRicetta) * defDim);
 
