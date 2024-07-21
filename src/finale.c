@@ -67,7 +67,6 @@ typedef struct {
 typedef union {
   int Int;
   lotto_t Lotto;
-  CompRicetta Cr;
 } Value;
 
 typedef struct Nodo{
@@ -81,6 +80,9 @@ typedef struct {
   char * nome;
   CompRicetta * comp;
   uint len;
+
+  int t;      //ultimo t a cui è stato effettuato un controllo per maxQnt
+  int maxQnt; //massima quantità di ricette preparabili
 } Ricetta;
 
 typedef struct {
@@ -90,7 +92,6 @@ typedef struct {
 
 typedef struct {
   Ptr_nodo lt;
-  char * nomeIng;
   uint ingId;
   //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
@@ -515,7 +516,7 @@ void quicksort(Ordine * a, int p, int r){
 }
 
 // GESTIONE INPUT 
-char * get_token(bool * endCommand);
+char * get_token();
 int get_int(bool * endCommand);
 void seek_eol();
 int toInt(Nome token, uint idx);
@@ -539,7 +540,7 @@ Ptr_nodo push_val(Ptr_nodo testa, Value val);
 Ptr_nodo pop_val(Ptr_nodo testa, Value * out);
 
 // GESTIONE MAGAZZINO
-void espandi_magazzino(int ingId, char * nomeIng);
+void espandi_magazzino(int ingId);
 Ptr_nodo inserisci_per_scadenza(Ptr_nodo lt, Ptr_nodo testaLt);
 void aggiungi_lotti();
 void dealloca_magazzino();
@@ -590,6 +591,10 @@ Corriere corriere = {
 Coda pronti = {.buff = NULL, .sp = NULL};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
+#if STATS
+  int num_chiamate_csi = 0;
+  int num_successi = 0;
+#endif
 
 void sort_corriere(Corriere * c) {
   quicksort(c->buff, 0, c->len - 1);
@@ -621,6 +626,11 @@ int main(){
     } 
   }
   
+  #if STATS
+    printf("Numero chiamate: %d\nNumero successi: %d\n", num_chiamate_csi, num_successi);
+    printf("Numero chiamate di csi utili: %f\n", (float) num_successi/num_chiamate_csi);
+  #endif
+
   //stampa_albero(idxRicettario.root, 0);
   dealloca_albero(idxRicettario.root, &dealloca_ricetta);
   dealloca_albero(ingredienti.root, NULL);
@@ -673,15 +683,18 @@ void esegui_input(inpHeader h){
     case RIF:
       
       aggiungi_lotti();
-      // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente 
-      // che è appena stato rifornito
+      // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente che è appena stato rifornito
       Ptr_ordine prec = NULL;
       for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
         
-        if(magazzino.sez[corr->ord.missIng].reStock == t){
+        Ricetta rc = ricettario.rts[corr->ord.rcId];
+        if((magazzino.sez[corr->ord.missIng].reStock == t) && (rc.maxQnt >= corr->ord.qnt || rc.t != t)){
 
           int newMissIng = -1;
           if(ci_sono_ingr(corr->ord, &newMissIng)){
+            #if STATS
+              num_successi++;
+            #endif
             prepara_ordine(corr->ord, true);
 
             if(prec != NULL){
@@ -788,6 +801,8 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
   rt.nome = nome;
   rt.comp = cr;
   rt.len = len;
+  rt.t = -1;
+  rt.maxQnt = 65000;
 
   aggiungi_cella(&idxRicettario, init_cella(nome, ricettario_push(rt)));
 
@@ -809,13 +824,13 @@ inpHeader get_input_header(){
     case 'g': 
       //ag[g]iungi
       out.istr = AGG;
-      out.nome = get_token(NULL);
+      out.nome = get_token();
       break;
       
     case 'm':
       //ri[m]uovi
       out.istr = RMV;
-      out.nome = get_token(NULL);
+      out.nome = get_token();
       break;
 
     case 'f':
@@ -826,7 +841,7 @@ inpHeader get_input_header(){
     case 'd':
       //or[d]ine 
       out.istr = ORD;
-      out.nome = get_token(NULL);
+      out.nome = get_token();
       break;
 
     default:
@@ -875,23 +890,17 @@ int get_int(bool * endCommand){
 
 // Legge una stringa da stdin e copia il contenuto nel puntatore passato come paramentro
 // se la stringa era l'ultima della riga o del file ritorna true;
-char * get_token(bool * endCommand){
+char * get_token(){
   
   Nome token = "";
   bool endToken = false;
-  bool _endCommand = false;
   uint idx = 0;
 
   for(;!endToken; ++idx){
 
     char x = getchar();
 
-    if(x == '\n' || x == EOF){
-      // COMMAND IS FINISH
-      _endCommand = true;
-      x = ' ';
-    }      
-    if(x == ' '){
+    if(x == ' ' || x == '\n' || x == EOF){
       // TOKEN IS END
       endToken = true;
       x = '\0';
@@ -904,8 +913,6 @@ char * get_token(bool * endCommand){
     token, 
     sizeof(char) * idx
   );
-
-  if(endCommand != NULL) *endCommand = _endCommand; 
 
   return outString;
 
@@ -927,7 +934,7 @@ int aggiungi_ingrediente(char * ing){
 
       //Espando il magazzino
       if(maxId >= (int) magazzino.len){
-        espandi_magazzino(maxId, ing);
+        espandi_magazzino(maxId);
       }
 
       return maxId;
@@ -941,41 +948,27 @@ int aggiungi_ingrediente(char * ing){
 //e ritorna un array di componenti della ricetta
 CompRicetta * get_comp_ricetta(uint * len){
   
-  Ptr_nodo out = NULL;
+  const uint defDim = 3;
   bool endCommand = false;
+  CompRicetta * comp = malloc(sizeof(CompRicetta) * defDim);
 
-  size_t _len = 0; 
+  uint idx = 0; 
   while(!endCommand){
+    
+    if(idx >= defDim){
+      comp = realloc(comp, sizeof(CompRicetta) * (idx + 1));
+    }
 
-    char * nome = get_token(NULL);
+    comp[idx].ingId = aggiungi_ingrediente(get_token()); 
+    comp[idx].qnt = get_int(&endCommand);
 
-    CompRicetta c = {
-      .ingId = aggiungi_ingrediente(nome), 
-      .qnt = get_int(&endCommand)
-    };
-
-    _len++;
-
-    out = push_val(out, (Value) c);
-  }
-
-  CompRicetta * comp = malloc(sizeof(CompRicetta) * _len);
-  
-  size_t idx = 0;
-  Ptr_nodo prec = NULL;
-  for(Ptr_nodo temp = out; temp != NULL; temp = temp->next){
-    comp[idx] = temp->val.Cr;
-    if(prec != NULL) free(prec);
-    prec = temp;
     idx++;
   }
-  free(prec);
 
-  if(len != NULL) *len = _len; 
+  if(len != NULL) *len = idx; 
 
   return comp;
   
-  //return out;
 }
 
 void deallocaLL(Ptr_nodo testa){
@@ -1036,14 +1029,13 @@ int rimuovi_ricetta(char * nome){
   GESTIONE DEL MAGAZZINO
 */
 
-void espandi_magazzino(int ingId, char * nomeIng){
+void espandi_magazzino(int ingId){
   size_t len = ingId + 1;
 
   magazzino.sez = realloc(magazzino.sez, len * sizeof(Sezione));
   if(magazzino.sez == NULL) malloc_failed();
 
   for(size_t i = magazzino.len; i < len; i++){
-    magazzino.sez[i].nomeIng = nomeIng;
     magazzino.sez[i].lt = NULL;
     magazzino.sez[i].qnt = 0;
     magazzino.sez[i].reStock = -1;
@@ -1092,7 +1084,7 @@ void aggiungi_lotti(){
   while (!endCommand) {
 
     // vai a prendere l'id dell'ingrediente sapendo il Nome
-    int ingId = aggiungi_ingrediente(get_token(NULL));
+    int ingId = aggiungi_ingrediente(get_token());
     int qnt = get_int(NULL);
     uint scad = get_int(&endCommand);
 
@@ -1134,7 +1126,8 @@ void init_corriere(){
 
 void rimuovi_scaduti(Sezione * sez){
   
-  if(sez->reStock != t){
+  //TODO: sebra più veloce con l'if
+  //if(sez->reStock != t){
 
     Ptr_nodo temp;
     for(temp = sez->lt; temp != NULL;){
@@ -1147,32 +1140,48 @@ void rimuovi_scaduti(Sezione * sez){
     }
     sez->lt = temp;
 
-  }
+  //}
 
 }
 
 // Ritorna -1 se ci sono tutte le scorte necessarie per preparare un ordine mentre
 // ritorna l'id del primo ingrediente mancante in caso contrario
 int controlla_scorte(Ordine ord){
+    
+  Ricetta * rc = &ricettario.rts[ord.rcId];
+  int maxQnt = 65000;
 
-  Ricetta rc = ricettario.rts[ord.rcId];
-  for(size_t i = 0; i < rc.len; ++i){
-    size_t id = rc.comp[i].ingId;
+  rc->t = t;
+
+  #if STATS
+    num_chiamate_csi++;
+  #endif
+
+  for(size_t i = 0; i < rc->len; ++i){
+    size_t id = rc->comp[i].ingId;
     Sezione * sez = &magazzino.sez[id];
     
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
     if(sez->reStock != t && sez->lt != NULL) {
       rimuovi_scaduti(sez);
-      //sez->reStock = t;
+      sez->reStock = t;
     }
+      
+    //Calcoliamo il numero massimo di ricette che possiamo preparare
+    int maxRc = sez->qnt / rc->comp[i].qnt;
+    if(maxRc < maxQnt) maxQnt = maxRc;
 
-    // Se gli ingredienti non sono sufficenti ritorno subito false
-    if(sez->qnt < (rc.comp[i].qnt * ord.qnt)) return id;
+    // se il numero massimo di ricette preparabili non è sufficente termino
+    if(maxRc < ord.qnt){
+      rc->maxQnt = maxRc;
+      return id;
+    } 
   }
 
+  rc->maxQnt = maxQnt;
   return -1;
-}
 
+}
 
 bool ci_sono_ingr(Ordine ord, int * missIng){
   int out = controlla_scorte(ord); 
@@ -1256,16 +1265,17 @@ void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
 
 void prepara_ordine(Ordine ord, bool rifornimento){
   // Il check per vedere se ci sono gli ingredienti lo do per già fatto
-  Ricetta rc = ricettario.rts[ord.rcId]; 
+  Ricetta * rc = &ricettario.rts[ord.rcId]; 
   int peso_tot = 0;
-  for(size_t i = 0; i < rc.len; ++i){
+  for(size_t i = 0; i < rc->len; ++i){
 
-    int id = rc.comp[i].ingId;
-    int peso = rc.comp[i].qnt * ord.qnt;
+    int id = rc->comp[i].ingId;
+    int peso = rc->comp[i].qnt * ord.qnt;
     preleva_ingredienti(&magazzino.sez[id], peso); 
     peso_tot += peso;
   }
-
+  
+  rc->maxQnt -= ord.qnt;
   ord.peso = peso_tot;
 
   aggiungi_ordine(ord, &pronti, rifornimento);

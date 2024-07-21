@@ -66,7 +66,6 @@ typedef struct {
 typedef union {
   int Int;
   lotto_t Lotto;
-  CompRicetta Cr;
 } Value;
 
 typedef struct Nodo{
@@ -80,6 +79,9 @@ typedef struct {
   char * nome;
   CompRicetta * comp;
   uint len;
+
+  int t;        //ultimo t a cui è stato effettuato un controllo per maxQnt
+  int maxQnt;   //massima quantità di ricette preparabili
 } Ricetta;
 
 typedef struct {
@@ -89,12 +91,10 @@ typedef struct {
 
 typedef struct {
   Ptr_nodo lt;
-  char * nomeIng;
   uint ingId;
-  //uint usedBy; // Numero di ricette che hanno come componente questo ingrediente
   int qnt;
-  
-  int reStock; // t dell'ultimo restock 
+
+  int reStock;    // t dell'ultimo restock 
 } Sezione;
 
 // Il magazzino lo gestisco come un array dinamico a cui ogni idice corrisponde un Ingrediente.
