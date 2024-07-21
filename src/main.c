@@ -307,7 +307,7 @@ inpHeader get_input_header(){
   if(scanf("%s", istr) == EOF) return out;
 
   //La scanf lascia sempre uno spazio dopo oppure un \n, lo skippiamo
-  char unused = getchar();
+  char unused = getchar_unlocked();
   (void) unused;
 
   //Sappiamo che il terzo carattere è univoco per ogni comando
@@ -344,7 +344,7 @@ inpHeader get_input_header(){
 }
 
 void seek_eol(){
-  while(getchar() != '\n');
+  while(getchar_unlocked() != '\n');
 }
 
 
@@ -359,7 +359,7 @@ int get_int(bool * endCommand){
 
   while(!endToken) {
 
-    char x = getchar();
+    char x = getchar_unlocked();
 
     if(x == '\n' || x == EOF){
       // COMMAND IS FINISH
@@ -389,7 +389,7 @@ char * get_token(){
 
   for(;!endToken; ++idx){
 
-    char x = getchar();
+    char x = getchar_unlocked();
 
     if(x == ' ' || x == '\n' || x == EOF){
       // TOKEN IS END
@@ -724,26 +724,40 @@ void enqueue(Ptr_ordine elem, Coda * cd){
 
 void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
 
-    bool found = false;
-    Ptr_ordine prec = NULL;
-    for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
-      if(elem->ord.t < temp->ord.t){
-        if(prec == NULL){
-          elem->next = cd->buff;
-          cd->buff = elem;
-        }
-        else{
-          prec->next = elem;
-          elem->next = temp;
-        }
-        found = true;
-        break;
+  bool found = false;
+  Ptr_ordine prec = NULL;
+
+  // TODO: più veloce senza questi if
+  //La coda è vuota
+  if(cd->sp == NULL){
+    enqueue(elem, cd);
+    return;
+  }
+  // L'ultimo elemetno ha un tempo minore
+  else if(elem->ord.t >= cd->sp->ord.t){
+    enqueue(elem, cd);
+    return;
+  }
+  
+  //Scorriamo la lista
+  for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
+    if(elem->ord.t < temp->ord.t){
+      if(prec == NULL){
+        elem->next = cd->buff;
+        cd->buff = elem;
       }
-      prec = temp;
+      else{
+        prec->next = elem;
+        elem->next = temp;
+      }
+      found = true;
+      break;
     }
-    if(!found){
-      enqueue(elem, cd); 
-    }
+    prec = temp;
+  }
+  if(!found){
+    enqueue(elem, cd); 
+  }
 }
 
 void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
