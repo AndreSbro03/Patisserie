@@ -143822,6 +143822,3 @@ accettato
 rifiutato
 accettato
 accettato
-Numero chiamate: 26608239
-Numero successi: 9664
-Numero chiamate di csi utili: 0.000363

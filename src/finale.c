@@ -477,44 +477,109 @@ void rb_delete_fixup(Albero * T, Ptr_cella x){
   }
 }
 
-//quicksort
-void swap(Ordine * a, int i1, int i2){
-    //printf("%d %d\n", i1, i2);
-    Ordine t = a[i1];
-    a[i1] = a[i2];
-    a[i2] = t;
-}
+#define WEIGHTS_DECR 0
+#define TIME_CRESC 1
 
-int partition(Ordine * a, int p, int r){
+void merge(Ordine arr[], int l, int m, int r, int type) 
+{ 
+    int i, j, k; 
+    int n1 = m - l + 1; 
+    int n2 = r - m; 
+  
+    // Create temp arrays 
+    Ordine L[n1], R[n2]; 
+  
+    // Copy data to temp arrays 
+    // L[] and R[] 
+    for (i = 0; i < n1; i++) 
+        L[i] = arr[l + i]; 
+    for (j = 0; j < n2; j++) 
+        R[j] = arr[m + 1 + j]; 
+  
+    // Merge the temp arrays back 
+    // into arr[l..r] 
+    // Initial index of first subarray 
+    i = 0; 
+  
+    // Initial index of second subarray 
+    j = 0; 
+  
+    // Initial index of merged subarray 
+    k = l;
+  if(type == 1){ // Lavorando con tempo
+    
+    while (i < n1 && j < n2) { 
+        if (L[i].t <= R[j].t) { 
+            arr[k] = L[i]; 
+            i++; 
+        } 
+        else { 
+            arr[k] = R[j]; 
+            j++; 
+        } 
+        k++; 
+    } 
 
-    Ordine x = a[r];
-    int i = p - 1;
-
-    for(int j = p; j < r; ++j){
-      if(a[j].peso > x.peso){
-        i = i + 1;
-        swap(a, i, j);
-      }
-      else if(a[j].peso == x.peso){
-        if(a[j].t <= x.t){
-          i = i + 1;
-          swap(a, i, j);
+  }
+  else if(type == 0){ // lavorando con peso
+    
+    while (i < n1 && j < n2) { 
+        if (L[i].peso > R[j].peso) { 
+            arr[k] = L[i]; 
+            i++; 
         }
-      }
-    }
-    swap(a, i + 1, r);
-
-    return i + 1;
-}
-
-void quicksort(Ordine * a, int p, int r){
-    if(p < r){
-        int q = partition(a, p, r);
-        quicksort(a, p, q - 1);
-        quicksort(a, q + 1, r);
-    }
-}
-
+        else if( L[i].peso == R[j].peso) {
+            if( L[i].t < R[j].t){
+                arr[k] = L[i]; 
+                i++; 
+            }
+            else{
+                arr[k] = R[j]; 
+            j++;
+            }
+        }
+        else { 
+            arr[k] = R[j]; 
+            j++; 
+        } 
+        k++; 
+    } 
+  }
+  
+    // Copy the remaining elements 
+    // of L[], if there are any 
+    while (i < n1) { 
+        arr[k] = L[i]; 
+        i++; 
+        k++; 
+    } 
+  
+    // Copy the remaining elements of 
+    // R[], if there are any 
+    while (j < n2) { 
+        arr[k] = R[j]; 
+        j++; 
+        k++; 
+    } 
+} 
+  
+// l is for left index and r is 
+// right index of the sub-array 
+// of arr to be sorted 
+void mergeSort(Ordine arr[], int l, int r, int type) 
+{ 
+    if (l < r) { 
+        // Same as (l+r)/2, but avoids 
+        // overflow for large l and r 
+        int m = l + (r - l) / 2; 
+  
+        // Sort first and second halves 
+        mergeSort(arr, l, m, type); 
+        mergeSort(arr, m + 1, r, type); 
+  
+        merge(arr, l, m, r, type); 
+    } 
+} 
 // GESTIONE INPUT 
 char * get_token();
 int get_int(bool * endCommand);
@@ -531,6 +596,7 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len);
 void dealloca_ricetta(int id);
 int rimuovi_ricetta(char * nome);
 int ricettario_push(Ricetta rt);
+int whatTree(char x);
 
 // GESTIONE INGREDIENTI 
 int aggiungi_ingrediente(char * ing);
@@ -552,7 +618,8 @@ void stampa_magazzino();
 void init_corriere();
 void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento);
 void enqueue(Ptr_ordine elem, Coda * cd);
-void prepara_ordine(Ordine ord, bool rifornimento);
+void prepara_ordine(Ordine ord);
+void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd);
 void dealloca_ordini(Coda * cd);
 bool ricetta_in_coda(int id, Coda cd);
 void espandi_corriere();
@@ -565,13 +632,17 @@ void ripristina_corriere();
  * VARIABILI GLOBALI
 */
 
+#define VOCABDIM 'z' - '0'
+
 int t = 0;
 bool end_program = false;
 
-Albero idxRicettario = {.root = &Tnil};
+//Albero idxRicettario = {.root = &Tnil};
 Ricettario ricettario = {.rts = NULL, .len = 0};
 
-Albero ingredienti = {.root = &Tnil};
+//Albero ingredienti = {.root = &Tnil};
+Albero ingredienti[VOCABDIM] = { [0 ... VOCABDIM-1].root = &Tnil };
+Albero idxRicettario[VOCABDIM] = { [0 ... VOCABDIM-1].root = &Tnil };
 int maxId = -1;
 
 Ptr_nodo validRctId = NULL;
@@ -588,17 +659,17 @@ Corriere corriere = {
   .len = 0
 };
 
-Coda pronti = {.buff = NULL, .sp = NULL};
+//Coda pronti = {.buff = NULL, .sp = NULL};
+struct {
+  Ordine * buff;
+  uint len;
+} pronti;
+
 Coda attesa = {.buff = NULL, .sp = NULL};
 
-#if STATS
-  int num_chiamate_csi = 0;
-  int num_successi = 0;
-#endif
-
 void sort_corriere(Corriere * c) {
-  quicksort(c->buff, 0, c->len - 1);
-  //insertion_sort(c->buff, c->len);
+  //quicksort(c->buff, 0, c->len - 1, WEIGHTS_DECR);
+  mergeSort(c->buff, 0, c->len - 1, WEIGHTS_DECR);
 }
 
 /*
@@ -607,12 +678,14 @@ void sort_corriere(Corriere * c) {
 
 int main(){
 
+  
   init_corriere();
 
   while(!end_program){
     //printf("\ntime: %d\n", t);
 
     if(t % corriere.t == 0 && t != 0){
+      mergeSort(pronti.buff, 0, pronti.len - 1, TIME_CRESC);
       carica_corriere();
       ripristina_corriere();
     }
@@ -625,17 +698,14 @@ int main(){
       t++;
     } 
   }
-  
-  #if STATS
-    printf("Numero chiamate: %d\nNumero successi: %d\n", num_chiamate_csi, num_successi);
-    printf("Numero chiamate di csi utili: %f\n", (float) num_successi/num_chiamate_csi);
-  #endif
 
   //stampa_albero(idxRicettario.root, 0);
-  dealloca_albero(idxRicettario.root, &dealloca_ricetta);
-  dealloca_albero(ingredienti.root, NULL);
+  for(uint i = 0; i < VOCABDIM; ++i) {
+    dealloca_albero(idxRicettario[i].root, &dealloca_ricetta);
+    dealloca_albero(ingredienti[i].root, NULL);
+  }
   dealloca_magazzino();
-  dealloca_ordini(&pronti);
+  free(pronti.buff);
   dealloca_ordini(&attesa);
 
   free(ricettario.rts);
@@ -692,10 +762,8 @@ void esegui_input(inpHeader h){
 
           int newMissIng = -1;
           if(ci_sono_ingr(corr->ord, &newMissIng)){
-            #if STATS
-              num_successi++;
-            #endif
-            prepara_ordine(corr->ord, true);
+
+            prepara_ordine(corr->ord);
 
             if(prec != NULL){
               prec->next = corr->next;
@@ -752,7 +820,7 @@ void esegui_input(inpHeader h){
         };
 
         // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
-        if(ci_sono_ingr(ord, &ord.missIng)) prepara_ordine(ord, false);
+        if(ci_sono_ingr(ord, &ord.missIng)) prepara_ordine(ord);
         else aggiungi_ordine(ord, &attesa, false); 
 
         printf("accettato\n");
@@ -768,7 +836,7 @@ void esegui_input(inpHeader h){
 
 
 int cerca_ricetta(char * nome) {
-  Ptr_cella cl = cerca_cella(idxRicettario.root, nome);
+  Ptr_cella cl = cerca_cella(idxRicettario[whatTree(nome[0])].root, nome);
   if(cl == NULL) return -1;
   return cl->id;
 }
@@ -804,7 +872,7 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
   rt.t = -1;
   rt.maxQnt = 65000;
 
-  aggiungi_cella(&idxRicettario, init_cella(nome, ricettario_push(rt)));
+  aggiungi_cella(&idxRicettario[whatTree(nome[0])], init_cella(nome, ricettario_push(rt)));
 
 }
 
@@ -918,6 +986,10 @@ char * get_token(){
 
 }
 
+int whatTree(char x){
+  return x - '0';
+}
+
 void malloc_failed(){
   perror("Malloc failed!");
   exit(EXIT_FAILURE);
@@ -926,11 +998,12 @@ void malloc_failed(){
 // Ritorna l'idice a cui ha trovato o aggiunto l'ingrediente
 int aggiungi_ingrediente(char * ing){
 
-  Ptr_cella x = cerca_cella(ingredienti.root, ing);
+  int wT = whatTree(ing[0]);
+  Ptr_cella x = cerca_cella(ingredienti[wT].root, ing);
 
   if(x == NULL){
       maxId += 1;
-      aggiungi_cella(&ingredienti, init_cella(ing, maxId));
+      aggiungi_cella(&ingredienti[wT], init_cella(ing, maxId));
 
       //Espando il magazzino
       if(maxId >= (int) magazzino.len){
@@ -948,7 +1021,7 @@ int aggiungi_ingrediente(char * ing){
 //e ritorna un array di componenti della ricetta
 CompRicetta * get_comp_ricetta(uint * len){
   
-  const uint defDim = 3; // 3 sembra essere il valore ottimale. Probabilmente è il valor medio di cr X ricette
+  const uint defDim = 3; // 3 sembra essere il valore ottimale
   bool endCommand = false;
   CompRicetta * comp = malloc(sizeof(CompRicetta) * defDim);
 
@@ -1002,19 +1075,27 @@ Ptr_nodo pop_val(Ptr_nodo testa, Value * out){
   return p;
 }
 
+bool ricetta_in_pronti(int id){
+  for(uint i = 0; i < pronti.len; ++i){
+    if(pronti.buff[i].rcId == id) return true;
+  }
+  return false;
+}
+
 // Rimuove la ricetta se la trova
 //  - 0 se rimossa
 //  - 1 se non trovata
 //  - 2 se ordini in coda
 int rimuovi_ricetta(char * nome){
-  Ptr_cella x = cerca_cella(idxRicettario.root, nome);
+  int wT = whatTree(nome[0]); 
+  Ptr_cella x = cerca_cella(idxRicettario[wT].root, nome);
   
   if(x != NULL){
-    if(ricetta_in_coda(x->id, pronti) || ricetta_in_coda(x->id, attesa)){
+    if(ricetta_in_pronti(x->id) || ricetta_in_coda(x->id, attesa)){
         return 2;
     }
     else{
-      x = rimuovi_cella(&idxRicettario, x);
+      x = rimuovi_cella(&idxRicettario[wT], x);
       dealloca_ricetta(x->id);
       validRctId = push_val(validRctId, (Value) x->id);
       free(x->key);
@@ -1153,10 +1234,6 @@ int controlla_scorte(Ordine ord){
 
   rc->t = t;
 
-  #if STATS
-    num_chiamate_csi++;
-  #endif
-
   for(size_t i = 0; i < rc->len; ++i){
     size_t id = rc->comp[i].ingId;
     Sezione * sez = &magazzino.sez[id];
@@ -1184,8 +1261,10 @@ int controlla_scorte(Ordine ord){
 }
 
 bool ci_sono_ingr(Ordine ord, int * missIng){
+
   int out = controlla_scorte(ord); 
   if (missIng != NULL) *missIng = out;
+
   return out == -1;
 }
 
@@ -1231,6 +1310,20 @@ void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
 
   bool found = false;
   Ptr_ordine prec = NULL;
+
+  // TODO: più veloce senza questi if
+  //La coda è vuota
+  if(cd->sp == NULL){
+    enqueue(elem, cd);
+    return;
+  }
+  // L'ultimo elemetno ha un tempo minore
+  else if(elem->ord.t >= cd->sp->ord.t){
+    enqueue(elem, cd);
+    return;
+  }
+  
+  //Scorriamo la lista
   for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
     if(elem->ord.t < temp->ord.t){
       if(prec == NULL){
@@ -1251,6 +1344,14 @@ void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
   }
 }
 
+void aggiungi_ordine_pronti(Ordine ord){
+  pronti.len++;
+  uint newSize = sizeof(Ordine) * pronti.len;
+  pronti.buff = realloc(pronti.buff, newSize);
+  pronti.buff[pronti.len - 1] = ord;
+}
+
+
 void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
   Ptr_ordine p = malloc(sizeof(listaordini_t));
   p->ord = ord;
@@ -1262,8 +1363,7 @@ void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
  
 }
 
-
-void prepara_ordine(Ordine ord, bool rifornimento){
+void prepara_ordine(Ordine ord){
   // Il check per vedere se ci sono gli ingredienti lo do per già fatto
   Ricetta * rc = &ricettario.rts[ord.rcId]; 
   int peso_tot = 0;
@@ -1278,7 +1378,7 @@ void prepara_ordine(Ordine ord, bool rifornimento){
   rc->maxQnt -= ord.qnt;
   ord.peso = peso_tot;
 
-  aggiungi_ordine(ord, &pronti, rifornimento);
+  aggiungi_ordine_pronti(ord);
 
 }
 
@@ -1322,37 +1422,28 @@ void dequeue(Coda * cd){
 
 void sposta_ordini_corriere(){
 
-  size_t idx = 0;
   int left = corriere.cap;
   int cont = 0;
  
-  for(Ptr_ordine temp = pronti.buff; temp != NULL; temp = temp->next){
-    if(temp->ord.peso > left){
+  for(uint i = 0; i < pronti.len; ++i){
+    if(pronti.buff[i].peso > left){
       break;
     }
     else {
-      left -= temp->ord.peso;
+      left -= pronti.buff[i].peso;
       cont++;
     }
   }
 
+  //Prendiamo la lista di ordini pronti e la splittiamo in due nuovi array, uno di ordini da spedire e uno di ordini ancora pronti ma che non stavano nel corriere.
   corriere.len = cont;
-  corriere.buff = malloc(sizeof(Ordine) * cont);
-  idx = 0;
-  left = corriere.cap;
+  corriere.buff = memcpy(malloc(sizeof(Ordine) * cont), pronti.buff, sizeof(Ordine) * cont);
+  
+  Ordine * old = pronti.buff;
+  pronti.len -= cont;
+  pronti.buff = memcpy(malloc(sizeof(Ordine) * pronti.len), &old[cont], sizeof(Ordine) * pronti.len);
+  free(old);
 
-  for(Ptr_ordine temp = pronti.buff; temp != NULL;){
-    if(temp->ord.peso > left){
-      break;
-    }
-    else{
-      corriere.buff[idx] = temp->ord;
-      left -= temp->ord.peso;
-      dequeue(&pronti);
-      ++idx;
-    }
-    temp = pronti.buff;
-  }
 }
 
 void carica_corriere(){
