@@ -9,6 +9,5 @@
 void quicksort(lotto_t * a, int p, int r);
 void insertion_sort(Ordine * a, int len);
 void mergeSort(Ptr_ordine arr[], int l, int r, int type);
-void mergeSort_l(lotto_t arr[], int l, int r); 
 
 #endif

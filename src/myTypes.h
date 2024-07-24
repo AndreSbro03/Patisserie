@@ -38,6 +38,7 @@ typedef struct {
   int peso;
   uint t;
 
+  int qntMissIng; 
   int missIng; //Id dell'ultimo ingrediente che abbiamo visto mancare (-1 se non manca niente)
 } Ordine;
 

@@ -407,6 +407,7 @@ typedef struct {
   int peso;
   uint t;
 
+  int qntMissIng; 
   int missIng; //Id dell'ultimo ingrediente che abbiamo visto mancare (-1 se non manca niente)
 } Ordine;
 
@@ -482,80 +483,6 @@ typedef struct {
 
 #define WEIGHTS_DECR 0
 #define TIME_DECR 1
-
-void merge_l(lotto_t arr[], int l, int m, int r) 
-{ 
-    int i, j, k; 
-    int n1 = m - l + 1; 
-    int n2 = r - m; 
-  
-    // Create temp arrays 
-    lotto_t L[n1], R[n2]; 
-  
-    // Copy data to temp arrays 
-    // L[] and R[] 
-    for (i = 0; i < n1; i++) 
-        L[i] = arr[l + i]; 
-    for (j = 0; j < n2; j++) 
-        R[j] = arr[m + 1 + j]; 
-  
-    // Merge the temp arrays back 
-    // into arr[l..r] 
-    // Initial index of first subarray 
-    i = 0; 
-  
-    // Initial index of second subarray 
-    j = 0; 
-  
-    // Initial index of merged subarray 
-    k = l;
-    
-    while (i < n1 && j < n2) { 
-        if (L[i].scadenza >= R[j].scadenza) { 
-            arr[k] = L[i]; 
-            i++; 
-        } 
-        else { 
-            arr[k] = R[j]; 
-            j++; 
-        } 
-        k++; 
-    } 
-  
-    // Copy the remaining elements 
-    // of L[], if there are any 
-    while (i < n1) { 
-        arr[k] = L[i]; 
-        i++; 
-        k++; 
-    } 
-  
-    // Copy the remaining elements of 
-    // R[], if there are any 
-    while (j < n2) { 
-        arr[k] = R[j]; 
-        j++; 
-        k++; 
-    } 
-} 
-  
-// l is for left index and r is 
-// right index of the sub-array 
-// of arr to be sorted 
-void mergeSort_l(lotto_t arr[], int l, int r) 
-{ 
-    if (l < r) { 
-        // Same as (l+r)/2, but avoids 
-        // overflow for large l and r 
-        int m = l + (r - l) / 2; 
-  
-        // Sort first and second halves 
-        mergeSort_l(arr, l, m); 
-        mergeSort_l(arr, m + 1, r); 
-  
-        merge_l(arr, l, m, r); 
-    } 
-} 
 
 void merge(Ptr_ordine arr[], int l, int m, int r, int type) 
 { 
@@ -677,8 +604,8 @@ int whatTree(char x);
 
 // GESTIONE INGREDIENTI 
 int aggiungi_ingrediente(char * ing);
-bool ci_sono_ingr(Ordine ord, int * missIng);
-int controlla_scorte(Ordine ord);
+bool ci_sono_ingr(Ordine ord, int * missIng, int * qntMissIng);
+int controlla_scorte(Ordine ord, int * lastIdxComp);
 Ptr_nodo push_val(Ptr_nodo testa, int val);
 Ptr_nodo pop_val(Ptr_nodo testa, int * out);
 
@@ -710,6 +637,7 @@ void ripristina_corriere();
 */
 
 #define VOCABDIM 'z' - '0' + 1
+#define MAXQNT 650000
 
 int t = 0;
 bool end_program = false;
@@ -765,6 +693,9 @@ int main(){
     inpHeader h = get_input_header();
     esegui_input(h);
 
+    //stampa_lotti(magazzino.sez[0].lts);
+    //stampa_magazzino();
+    
     if(h.istr == END) end_program = true;
     else{
       t++;
@@ -839,10 +770,17 @@ void esegui_input(inpHeader h){
       for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
         
         Ricetta rc = ricettario.rts[corr->ord.rcId];
-        if((magazzino.sez[corr->ord.missIng].reStock == t) && (rc.maxQnt >= corr->ord.qnt || rc.t != t)){
+       
+        if(
+          (magazzino.sez[corr->ord.missIng].reStock == t) &&    // c'è stato un rifornimento dell'ingrediente che mi mancava 
+          magazzino.sez[corr->ord.missIng].qnt > 0 &&           // quell'ingrediente non è già finito
+          (rc.maxQnt >= corr->ord.qnt || rc.t != t) &&          // la quantità massima producibile della ricetta sia maggiore di quella che mi serve
+          (magazzino.sez[corr->ord.missIng].qnt >= corr->ord.qntMissIng)
+        ){
 
           int newMissIng = -1;
-          if(ci_sono_ingr(corr->ord, &newMissIng)){
+          int newQntMissIng = -1;
+          if(ci_sono_ingr(corr->ord, &newMissIng, &newQntMissIng)){
 
             prepara_ordine(corr->ord);
 
@@ -865,6 +803,7 @@ void esegui_input(inpHeader h){
           }
           else{
             corr->ord.missIng = newMissIng;
+            corr->ord.qntMissIng = newQntMissIng;
             prec = corr;
             corr = corr->next;
           }
@@ -897,11 +836,12 @@ void esegui_input(inpHeader h){
           .rcId = rcId,
           .t = t,
           .missIng = -1,
+          .qntMissIng = -1,
           .qnt = get_int(NULL)
         };
 
         // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
-        if(ci_sono_ingr(ord, &ord.missIng)) prepara_ordine(ord);
+        if(ci_sono_ingr(ord, &ord.missIng, &ord.qntMissIng)) prepara_ordine(ord);
         else aggiungi_ordine(ord, &attesa); 
 
         printf("accettato\n");
@@ -951,7 +891,7 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
   rt.comp = cr;
   rt.len = len;
   rt.t = -1;
-  rt.maxQnt = 65000;
+  rt.maxQnt = MAXQNT;
 
   aggiungi_cella(&idxRicettario[whatTree(nome[0])], init_cella(nome, ricettario_push(rt)));
 
@@ -1216,14 +1156,13 @@ bool bsArena(Arena * ar, AreanaData data, int * minIdx){
     int d = r + ((q - r) * 0.5f);
     if (ar->buff[d].lt.scadenza == data.lt.scadenza){
       ar->buff[d].lt.qnt += data.lt.qnt;
-      if(minIdx != NULL) *minIdx = r;
       return true;
     }
     else if(ar->buff[d].lt.scadenza < data.lt.scadenza){
       q = d - 1;
     }
     else{
-      if(minIdx != NULL) *minIdx = r;
+      if(minIdx != NULL) *minIdx = d;
       r = d + 1;
     }
   }
@@ -1251,11 +1190,27 @@ void aggiungi_lotti(){
       
       sez->qnt += qnt;
 
-      int r = 0;
-      if(!bsArena(&sez->lts, (AreanaData) lt, &r)){
-        append_arena(&sez->lts, (AreanaData) lt);
-        if(sez->lts.len != 1) mergeSort_l(&sez->lts.buff->lt, r, sez->lts.len - 1);
+      int d = 0;
+      if(!bsArena(&sez->lts, (AreanaData) lt, &d)){
+        if((uint) d >= sez->lts.len){
+          append_arena(&sez->lts, (AreanaData) lt);
+        }
+        else{
+
+          AreanaData * newBuff = malloc(sizeof(AreanaData) * (sez->lts.len + 1));
+          int i = (sez->lts.buff[d].lt.scadenza < scad) ? 0 : 1;
+          memcpy(newBuff, sez->lts.buff, sizeof(AreanaData) * (d + i));
+          newBuff[d + i].lt = lt;
+          memcpy(&newBuff[d + 1 + i], &sez->lts.buff[d + i], sizeof(AreanaData) * (sez->lts.len - d - i));
+
+          free(sez->lts.buff);
+          sez->lts.buff = newBuff;
+          sez->lts.len += 1;
+          sez->lts.size = sez->lts.len;
+
+        }
       }
+
       sez->reStock = t;
     }
   }
@@ -1290,10 +1245,10 @@ void rimuovi_scaduti(Sezione * sez){
 
 // Ritorna -1 se ci sono tutte le scorte necessarie per preparare un ordine mentre
 // ritorna l'id del primo ingrediente mancante in caso contrario
-int controlla_scorte(Ordine ord){
+int controlla_scorte(Ordine ord, int * idxLastComp){
     
   Ricetta * rc = &ricettario.rts[ord.rcId];
-  int maxQnt = 65000;
+  int maxQnt = MAXQNT;
 
   rc->t = t;
 
@@ -1301,8 +1256,15 @@ int controlla_scorte(Ordine ord){
     size_t id = rc->comp[i].ingId;
     Sezione * sez = &magazzino.sez[id];
     
+    // Non ci sono elementi
+    if(sez->qnt <= 0){
+      rc->maxQnt = 0;
+      if(idxLastComp != NULL) *idxLastComp = i;
+      return id;
+    }
+    
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(sez->reStock != t && sez->lts.len > 0) {
+    if(sez->reStock != t) {
       rimuovi_scaduti(sez);
       sez->reStock = t;
     }
@@ -1314,22 +1276,26 @@ int controlla_scorte(Ordine ord){
     // se il numero massimo di ricette preparabili non è sufficente termino
     if(maxRc < ord.qnt){
       rc->maxQnt = maxRc;
+      if(idxLastComp != NULL) *idxLastComp = i;
       return id;
     } 
   }
 
   rc->maxQnt = maxQnt;
+  if(idxLastComp != NULL) *idxLastComp = -1;
   return -1;
 
 }
 
-bool ci_sono_ingr(Ordine ord, int * missIng){
+bool ci_sono_ingr(Ordine ord, int * missIng, int * qntMissIng){
   #if STATS
     num_chiamate_csi++;
   #endif
-
-  int out = controlla_scorte(ord); 
+  
+  int lastIdxComp = -1;
+  int out = controlla_scorte(ord, &lastIdxComp); 
   if (missIng != NULL) *missIng = out;
+  if (qntMissIng != NULL) *qntMissIng = ricettario.rts[ord.rcId].comp[lastIdxComp].qnt * ord.qnt;
 
   #if STATS
     if(out == -1) num_successi++;
