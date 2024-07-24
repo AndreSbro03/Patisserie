@@ -13,7 +13,6 @@
 char * get_token();
 int get_int(bool * endCommand);
 void seek_eol();
-int toInt(Nome token, uint idx);
 inpHeader get_input_header();
 void esegui_input(inpHeader h);
 CompRicetta * get_comp_ricetta(uint * len);
@@ -31,24 +30,24 @@ int whatTree(char x);
 int aggiungi_ingrediente(char * ing);
 bool ci_sono_ingr(Ordine ord, int * missIng);
 int controlla_scorte(Ordine ord);
-Ptr_nodo push_val(Ptr_nodo testa, Value val);
-Ptr_nodo pop_val(Ptr_nodo testa, Value * out);
+Ptr_nodo push_val(Ptr_nodo testa, int val);
+Ptr_nodo pop_val(Ptr_nodo testa, int * out);
 
 // GESTIONE MAGAZZINO
 void espandi_magazzino(int ingId);
-Ptr_nodo inserisci_per_scadenza(Ptr_nodo lt, Ptr_nodo testaLt);
 void aggiungi_lotti();
 void dealloca_magazzino();
 void rimuovi_scaduti(Sezione * sez);
 void preleva_ingredienti(Sezione * sez, int qnt);
 void stampa_magazzino();
+void stampa_lotti(Arena lts);
 
 //GESTIONE CORRIERE
 void init_corriere();
-void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento);
+void aggiungi_ordine(Ordine ord, Coda * cd);
+void append_arena(Arena * ar, AreanaData data);
 void enqueue(Ptr_ordine elem, Coda * cd);
 void prepara_ordine(Ordine ord);
-void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd);
 void dealloca_ordini(Coda * cd);
 bool ricetta_in_coda(int id, Coda cd);
 void espandi_corriere();
@@ -61,7 +60,7 @@ void ripristina_corriere();
  * VARIABILI GLOBALI
 */
 
-#define VOCABDIM 'z' - '0'
+#define VOCABDIM 'z' - '0' + 1
 
 int t = 0;
 bool end_program = false;
@@ -89,11 +88,7 @@ Corriere corriere = {
 };
 
 //Coda pronti = {.buff = NULL, .sp = NULL};
-struct {
-  Ordine * buff;
-  uint len;
-} pronti;
-
+Arena pronti = {.buff = NULL, .len = 0, .size = 0};
 Coda attesa = {.buff = NULL, .sp = NULL};
 
 #if STATS
@@ -101,25 +96,19 @@ Coda attesa = {.buff = NULL, .sp = NULL};
   int num_successi = 0;
 #endif
 
-void sort_corriere(Corriere * c) {
-  //quicksort(c->buff, 0, c->len - 1, WEIGHTS_DECR);
-  mergeSort(c->buff, 0, c->len - 1, WEIGHTS_DECR);
-}
-
 /*
  * INIZIO PROGRAMMA
 */
 
 int main(){
 
-  
   init_corriere();
 
   while(!end_program){
     //printf("\ntime: %d\n", t);
 
     if(t % corriere.t == 0 && t != 0){
-      mergeSort(pronti.buff, 0, pronti.len - 1, TIME_CRESC);
+      mergeSort(&pronti.buff->pOrd, 0, pronti.len - 1, TIME_DECR);
       carica_corriere();
       ripristina_corriere();
     }
@@ -127,6 +116,9 @@ int main(){
     inpHeader h = get_input_header();
     esegui_input(h);
 
+    stampa_lotti(magazzino.sez[0].lts);
+    stampa_magazzino();
+    
     if(h.istr == END) end_program = true;
     else{
       t++;
@@ -144,6 +136,9 @@ int main(){
     dealloca_albero(ingredienti[i].root, NULL);
   }
   dealloca_magazzino();
+  for(uint i = 0; i < pronti.len; i++){
+    free((Ptr_ordine) pronti.buff[i].pOrd);
+  }
   free(pronti.buff);
   dealloca_ordini(&attesa);
 
@@ -192,6 +187,7 @@ void esegui_input(inpHeader h){
     case RIF:
       
       aggiungi_lotti();
+
       // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente che è appena stato rifornito
       Ptr_ordine prec = NULL;
       for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
@@ -260,7 +256,7 @@ void esegui_input(inpHeader h){
 
         // Verifico se l'odine può essere preparato. Nel caso procedo immediatamente alla preparazione
         if(ci_sono_ingr(ord, &ord.missIng)) prepara_ordine(ord);
-        else aggiungi_ordine(ord, &attesa, false); 
+        else aggiungi_ordine(ord, &attesa); 
 
         printf("accettato\n");
         out = ORD;
@@ -289,10 +285,10 @@ int ricettario_push(Ricetta rt){
     return ricettario.len++;
   }
   else{
-    Value id;
+    int id;
     validRctId = pop_val(validRctId, &id);
-    memcpy(&ricettario.rts[id.Int], &rt, sizeof(Ricetta));
-    return id.Int;
+    memcpy(&ricettario.rts[id], &rt, sizeof(Ricetta));
+    return id;
   }
 }
 
@@ -497,7 +493,7 @@ void dealloca_ricetta(int id){
 }
 
 // Ritorna la nuova testa
-Ptr_nodo push_val(Ptr_nodo testa, Value val){
+Ptr_nodo push_val(Ptr_nodo testa, int val){
   Ptr_nodo x = malloc(sizeof(nodo_t));
   if(x == NULL) malloc_failed();
   x->val = val;
@@ -506,7 +502,7 @@ Ptr_nodo push_val(Ptr_nodo testa, Value val){
 }
 
 // Ritorna la nuova testa
-Ptr_nodo pop_val(Ptr_nodo testa, Value * out){
+Ptr_nodo pop_val(Ptr_nodo testa, int * out){
   if(testa == NULL) return NULL;
   Ptr_nodo p = testa->next;
   if(out != NULL) *out = testa->val;
@@ -516,7 +512,7 @@ Ptr_nodo pop_val(Ptr_nodo testa, Value * out){
 
 bool ricetta_in_pronti(int id){
   for(uint i = 0; i < pronti.len; ++i){
-    if(pronti.buff[i].rcId == id) return true;
+    if(pronti.buff[i].pOrd->ord.rcId == id) return true;
   }
   return false;
 }
@@ -536,7 +532,7 @@ int rimuovi_ricetta(char * nome){
     else{
       x = rimuovi_cella(&idxRicettario[wT], x);
       dealloca_ricetta(x->id);
-      validRctId = push_val(validRctId, (Value) x->id);
+      validRctId = push_val(validRctId, x->id);
       free(x->key);
       free(x);
       return 0;
@@ -555,8 +551,10 @@ void espandi_magazzino(int ingId){
   magazzino.sez = realloc(magazzino.sez, len * sizeof(Sezione));
   if(magazzino.sez == NULL) malloc_failed();
 
+  Arena def = {.buff = NULL, .len = 0, .size = 0};
+
   for(size_t i = magazzino.len; i < len; i++){
-    magazzino.sez[i].lt = NULL;
+    magazzino.sez[i].lts = def;
     magazzino.sez[i].qnt = 0;
     magazzino.sez[i].reStock = -1;
   }
@@ -564,38 +562,29 @@ void espandi_magazzino(int ingId){
   magazzino.len = len;
 }
 
+bool bsArena(Arena * ar, AreanaData data, int * minIdx){
+  int r = 0;
+  int q = ar->len - 1;
 
-Ptr_nodo inserisci_per_scadenza(Ptr_nodo lt, Ptr_nodo testaLt){
-
-  if(testaLt == NULL) return lt;
-
-  Ptr_nodo temp, prec = NULL;
-  for(temp = testaLt; temp != NULL; temp = temp->next){
-
-    if(lt->val.Lotto.scadenza == temp->val.Lotto.scadenza)
-    {
-      temp->val.Lotto.qnt += lt->val.Lotto.qnt;
-      free(lt);
-      return testaLt;
+  while(r <= q){
+    int d = r + ((q - r) * 0.5f);
+    if (ar->buff[d].lt.scadenza == data.lt.scadenza){
+      ar->buff[d].lt.qnt += data.lt.qnt;
+      if(minIdx != NULL) *minIdx = r;
+      return true;
     }
-    else if(lt->val.Lotto.scadenza < temp->val.Lotto.scadenza)
-    {
-      lt->next = temp;
-      if(prec != NULL){
-        prec->next = lt;
-        return testaLt;
-      }
-      else{
-        return lt;
-      }
+    else if(ar->buff[d].lt.scadenza < data.lt.scadenza){
+      q = d - 1;
     }
-    prec = temp;
+    else{
+      if(minIdx != NULL) *minIdx = r;
+      r = d + 1;
+    }
   }
-
-  prec->next = lt;
-
-  return testaLt;
+  
+  return false;
 }
+
 
 void aggiungi_lotti(){
   
@@ -606,24 +595,22 @@ void aggiungi_lotti(){
     // vai a prendere l'id dell'ingrediente sapendo il Nome
     int ingId = aggiungi_ingrediente(get_token());
     int qnt = get_int(NULL);
-    uint scad = get_int(&endCommand);
+    int scad = get_int(&endCommand);
 
-    if(scad > (uint) t){
-      // Aggiorniamo il valore di restock del magazzino e salviamo l'id in un buffer
+    if(scad > t){
       Sezione * sez = &magazzino.sez[ingId];
-      if(sez->reStock != t){
-        rimuovi_scaduti(sez);
-        sez->reStock = t;
-      }
+      if(sez->reStock != t) rimuovi_scaduti(sez);
 
-      Ptr_nodo lt = malloc(sizeof(nodo_t));
-      lt->val.Lotto.qnt = qnt;
-      lt->val.Lotto.scadenza = scad;     
-      lt->next = NULL;
+      lotto_t lt = {.qnt = qnt, .scadenza = scad};
       
-      // Vado ad aggiungere alla linked list della sezione il lotto
-      magazzino.sez[ingId].qnt += qnt;
-      magazzino.sez[ingId].lt = inserisci_per_scadenza(lt, sez->lt);  
+      sez->qnt += qnt;
+
+      int r = 0;
+      if(!bsArena(&sez->lts, (AreanaData) lt, &r)){
+        append_arena(&sez->lts, (AreanaData) lt);
+        if(sez->lts.len != 1) mergeSort_l(&sez->lts.buff->lt, r, sez->lts.len - 1);
+      }
+      sez->reStock = t;
     }
   }
 }
@@ -632,7 +619,7 @@ void dealloca_magazzino(){
 
   // Dealloca ogni singola serie di lotti
   for(size_t i = 0; i < magazzino.len; ++i){
-    deallocaLL(magazzino.sez[i].lt);
+    free(magazzino.sez[i].lts.buff);
   }
   // Dealloca le sezioni del magazzino
   free(magazzino.sez);
@@ -646,22 +633,13 @@ void init_corriere(){
 
 void rimuovi_scaduti(Sezione * sez){
   
-  //TODO: sebra più veloce con l'if
-  //if(sez->reStock != t){
-
-    Ptr_nodo temp;
-    for(temp = sez->lt; temp != NULL;){
-      if(temp->val.Lotto.scadenza <= t){
-        Value qnt;
-        temp = pop_val(temp, &qnt);
-        sez->qnt -= qnt.Int;
-      } 
-      else break;
+  for(int i = sez->lts.len - 1; i >= 0; --i){
+    if(sez->lts.buff[i].lt.scadenza <= t){
+      sez->qnt -= sez->lts.buff[i].lt.qnt;
+      sez->lts.len -= 1;
     }
-    sez->lt = temp;
-
-  //}
-
+    else break;
+  }
 }
 
 // Ritorna -1 se ci sono tutte le scorte necessarie per preparare un ordine mentre
@@ -678,7 +656,7 @@ int controlla_scorte(Ordine ord){
     Sezione * sez = &magazzino.sez[id];
     
     //Rimuovo eventuali elementi scaduti ed aggiorno il contatore degli ingredienti
-    if(sez->reStock != t && sez->lt != NULL) {
+    if(sez->reStock != t && sez->lts.len > 0) {
       rimuovi_scaduti(sez);
       sez->reStock = t;
     }
@@ -716,20 +694,20 @@ bool ci_sono_ingr(Ordine ord, int * missIng){
 void preleva_ingredienti(Sezione * sez, int qnt){
 
   int left = qnt;
-
-  for(Ptr_nodo temp = sez->lt; temp != NULL;){
-    if(temp->val.Lotto.qnt <= left){
-      Value qnt;
-      temp = pop_val(temp, &qnt);
-      left -= qnt.Int;
+  
+  for(int i = sez->lts.len - 1; i >= 0; --i){
+      
+    int * ltQnt = &sez->lts.buff[i].lt.qnt;
+    if(*ltQnt <= left){
+      left -= *ltQnt;
+      sez->lts.len -= 1;
     }
     else{
-      temp->val.Lotto.qnt -= left;
+      *ltQnt -= left;
       left = 0;
     }
 
     if(left == 0){
-      sez->lt = temp;
       sez->qnt -= qnt;
       return;
     }
@@ -751,59 +729,27 @@ void enqueue(Ptr_ordine elem, Coda * cd){
   cd->sp = elem;
 }
 
-void aggiungi_ordine_tempo(Ptr_ordine elem, Coda * cd){
+void append_arena(Arena * ar, AreanaData data){
+  ar->len++;
 
-  bool found = false;
-  Ptr_ordine prec = NULL;
-
-  // TODO: più veloce senza questi if
-  //La coda è vuota
-  if(cd->sp == NULL){
-    enqueue(elem, cd);
-    return;
-  }
-  // L'ultimo elemetno ha un tempo minore
-  else if(elem->ord.t >= cd->sp->ord.t){
-    enqueue(elem, cd);
+  if(ar->len <= ar->size){
+    ar->buff[ar->len - 1] = data;
     return;
   }
   
-  //Scorriamo la lista
-  for(Ptr_ordine temp = cd->buff; temp != NULL; temp = temp->next){
-    if(elem->ord.t < temp->ord.t){
-      if(prec == NULL){
-        elem->next = cd->buff;
-        cd->buff = elem;
-      }
-      else{
-        prec->next = elem;
-        elem->next = temp;
-      }
-      found = true;
-      break;
-    }
-    prec = temp;
-  }
-  if(!found){
-    enqueue(elem, cd); 
-  }
-}
+  uint newSize = sizeof(AreanaData) * ar->len;
+  ar->buff = realloc(ar->buff, newSize);
 
-void aggiungi_ordine_pronti(Ordine ord){
-  pronti.len++;
-  uint newSize = sizeof(Ordine) * pronti.len;
-  pronti.buff = realloc(pronti.buff, newSize);
-  pronti.buff[pronti.len - 1] = ord;
+  ar->buff[ar->len - 1] = data;
+  ar->size = ar->len;
 }
 
 
-void aggiungi_ordine(Ordine ord, Coda * cd, bool rifornimento){
+void aggiungi_ordine(Ordine ord, Coda * cd){
   Ptr_ordine p = malloc(sizeof(listaordini_t));
   p->ord = ord;
   p->next = NULL;
-  if(rifornimento){
-    aggiungi_ordine_tempo(p, cd);
-  }
+  if(cd == NULL) append_arena(&pronti,(AreanaData) p);
   else enqueue(p, cd);
  
 }
@@ -823,7 +769,7 @@ void prepara_ordine(Ordine ord){
   rc->maxQnt -= ord.qnt;
   ord.peso = peso_tot;
 
-  aggiungi_ordine_pronti(ord);
+  aggiungi_ordine(ord, NULL);
 
 }
 
@@ -870,24 +816,20 @@ void sposta_ordini_corriere(){
   int left = corriere.cap;
   int cont = 0;
  
-  for(uint i = 0; i < pronti.len; ++i){
-    if(pronti.buff[i].peso > left){
+  for(int i = pronti.len - 1; i >= 0; --i){
+    if(pronti.buff[i].pOrd->ord.peso > left){
       break;
     }
     else {
-      left -= pronti.buff[i].peso;
+      left -= pronti.buff[i].pOrd->ord.peso;
       cont++;
     }
   }
 
   //Prendiamo la lista di ordini pronti e la splittiamo in due nuovi array, uno di ordini da spedire e uno di ordini ancora pronti ma che non stavano nel corriere.
   corriere.len = cont;
-  corriere.buff = memcpy(malloc(sizeof(Ordine) * cont), pronti.buff, sizeof(Ordine) * cont);
-  
-  Ordine * old = pronti.buff;
+  corriere.buff = &pronti.buff[pronti.len - cont].pOrd; 
   pronti.len -= cont;
-  pronti.buff = memcpy(malloc(sizeof(Ordine) * pronti.len), &old[cont], sizeof(Ordine) * pronti.len);
-  free(old);
 
 }
 
@@ -899,11 +841,12 @@ void carica_corriere(){
     return;
   }
 
-  sort_corriere(&corriere);
+  mergeSort(corriere.buff, 0, corriere.len - 1, WEIGHTS_DECR);
 
   for(size_t i = 0; i < corriere.len; ++i){
-    Ordine ord = corriere.buff[i];
-    printf("%d %s %d\n", ord.t, ricettario.rts[ord.rcId].nome, ord.qnt);
+    Ptr_ordine pOr = corriere.buff[i];
+    printf("%d %s %d\n", pOr->ord.t, ricettario.rts[pOr->ord.rcId].nome, pOr->ord.qnt);
+    free(pOr);      
   }
 }
 
@@ -913,8 +856,15 @@ void stampa_magazzino(){
   }
 }
 
+void stampa_lotti(Arena lts){
+  printf("Lotti (%d): ", lts.len);
+  for(uint i = 0; i < lts.len; ++i){
+    printf("(%d, %d) ", lts.buff[i].lt.qnt, lts.buff[i].lt.scadenza);
+  }
+  printf("\n");
+}
+
 void ripristina_corriere(){
-  free(corriere.buff);
   corriere.buff = NULL;
   corriere.len = 0;
 }

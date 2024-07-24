@@ -33,7 +33,6 @@ typedef struct {
 } lotto_t;
 
 typedef struct {
-  //TODO: ricontrolla che forse era meglio con la ricetta già salvata
   int rcId; //Id della ricetta
   int qnt;
   int peso;
@@ -59,21 +58,27 @@ typedef struct{
 typedef struct {
   int cap;
   uint t;
-  Ordine * buff;
+  Ptr_ordine * buff;
   uint len;
 } Corriere;
 
-typedef union {
-  int Int;
-  lotto_t Lotto;
-} Value;
-
 typedef struct Nodo{
-  Value val;
+  int val;
   struct Nodo * next;
 } nodo_t;
 
 typedef nodo_t * Ptr_nodo;
+
+typedef union {
+  Ptr_ordine pOrd;
+  lotto_t lt;
+} AreanaData;
+
+typedef struct {
+  AreanaData * buff;
+  uint len;
+  uint size;
+} Arena;
 
 typedef struct {
   char * nome;
@@ -90,7 +95,7 @@ typedef struct {
 } Ricettario;
 
 typedef struct {
-  Ptr_nodo lt;
+  Arena lts;
   uint ingId;
   int qnt;
 
@@ -105,5 +110,6 @@ typedef struct {
   Sezione * sez;
   uint len;
 } Magazzino;
+
 
 #endif

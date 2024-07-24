@@ -4,10 +4,11 @@
 #include "myTypes.h"
 
 #define WEIGHTS_DECR 0
-#define TIME_CRESC 1
+#define TIME_DECR 1
 
-void quicksort(Ordine * a, int p, int r, int type);
+void quicksort(lotto_t * a, int p, int r);
 void insertion_sort(Ordine * a, int len);
-void mergeSort(Ordine arr[], int l, int r, int type); 
+void mergeSort(Ptr_ordine arr[], int l, int r, int type);
+void mergeSort_l(lotto_t arr[], int l, int r); 
 
 #endif
