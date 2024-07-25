@@ -73,10 +73,10 @@ typedef nodo_t * Ptr_nodo;
 typedef union {
   Ptr_ordine pOrd;
   lotto_t lt;
-} AreanaData;
+} ArenaData;
 
 typedef struct {
-  AreanaData * buff;
+  ArenaData * buff;
   uint len;
   uint size;
 } Arena;

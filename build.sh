@@ -33,8 +33,8 @@ massif(){
   mv massif.out.* massif_07
   valgrind --tool=massif ./build/$NAME  < Tests/open8.txt 
   mv massif.out.* massif_08
-  #valgrind --tool=massif ./build/$NAME  < Tests/open9.txt 
-  #mv massif.out.* massif_09
+  valgrind --tool=massif ./build/$NAME  < Tests/open9.txt 
+  mv massif.out.* massif_09
   #valgrind --tool=massif ./build/$NAME  < Tests/open10.txt 
   #mv massif.out.* massif_10
 }
@@ -45,8 +45,8 @@ callgrind(){
   mv callgrind.out.* callgrind_07
   valgrind --tool=callgrind ./build/$NAME  < Tests/open8.txt 
   mv callgrind.out.* callgrind_08
-  #valgrind --tool=callgrind ./build/$NAME < Tests/open9.txt 
-  #mv callgrind.out.* callgrind_09
+  valgrind --tool=callgrind ./build/$NAME < Tests/open9.txt 
+  mv callgrind.out.* callgrind_09
   #valgrind --tool=callgrind ./build/$NAME < Tests/open10.txt 
   #mv callgrind.out.* callgrind_10
 }

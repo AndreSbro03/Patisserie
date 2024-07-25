@@ -24,7 +24,6 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len);
 void dealloca_ricetta(int id);
 int rimuovi_ricetta(char * nome);
 int ricettario_push(Ricetta rt);
-int whatTree(char x);
 
 // GESTIONE INGREDIENTI 
 int aggiungi_ingrediente(char * ing);
@@ -45,7 +44,7 @@ void stampa_lotti(Arena lts);
 //GESTIONE CORRIERE
 void init_corriere();
 void aggiungi_ordine(Ordine ord, Coda * cd);
-void append_arena(Arena * ar, AreanaData data);
+void append_arena(Arena * ar, ArenaData data);
 void enqueue(Ptr_ordine elem, Coda * cd);
 void prepara_ordine(Ordine ord);
 void dealloca_ordini(Coda * cd);
@@ -60,8 +59,7 @@ void ripristina_corriere();
  * VARIABILI GLOBALI
 */
 
-#define VOCABDIM 'z' - '0' + 1
-#define MAXQNT 650000
+#define INF (int) 2147483647
 
 int t = 0;
 bool end_program = false;
@@ -70,8 +68,8 @@ bool end_program = false;
 Ricettario ricettario = {.rts = NULL, .len = 0};
 
 //Albero ingredienti = {.root = &Tnil};
-Albero ingredienti[VOCABDIM] = { [0 ... VOCABDIM-1].root = &Tnil };
-Albero idxRicettario[VOCABDIM] = { [0 ... VOCABDIM-1].root = &Tnil };
+Albero ingredienti = { .root = &Tnil };
+Albero idxRicettario = { .root = &Tnil };
 int maxId = -1;
 
 Ptr_nodo validRctId = NULL;
@@ -132,10 +130,8 @@ int main(){
   #endif
 
   //stampa_albero(idxRicettario.root, 0);
-  for(uint i = 0; i < VOCABDIM; ++i) {
-    dealloca_albero(idxRicettario[i].root, &dealloca_ricetta);
-    dealloca_albero(ingredienti[i].root, NULL);
-  }
+  dealloca_albero(idxRicettario.root, &dealloca_ricetta);
+  dealloca_albero(ingredienti.root, NULL);
   dealloca_magazzino();
   for(uint i = 0; i < pronti.len; i++){
     free((Ptr_ordine) pronti.buff[i].pOrd);
@@ -196,10 +192,10 @@ void esegui_input(inpHeader h){
         Ricetta rc = ricettario.rts[corr->ord.rcId];
        
         if(
-          (magazzino.sez[corr->ord.missIng].reStock == t) &&    // c'è stato un rifornimento dell'ingrediente che mi mancava 
-          magazzino.sez[corr->ord.missIng].qnt > 0 &&           // quell'ingrediente non è già finito
-          (rc.maxQnt >= corr->ord.qnt || rc.t != t) &&          // la quantità massima producibile della ricetta sia maggiore di quella che mi serve
-          (magazzino.sez[corr->ord.missIng].qnt >= corr->ord.qntMissIng)
+          (magazzino.sez[corr->ord.missIng].reStock == t) &&              // c'è stato un rifornimento dell'ingrediente che mi mancava 
+          magazzino.sez[corr->ord.missIng].qnt > 0 &&                     // quell'ingrediente non è già finito
+          (rc.maxQnt >= corr->ord.qnt || rc.t != t) &&                    // la quantità massima producibile della ricetta sia maggiore di quella che mi serve
+          (magazzino.sez[corr->ord.missIng].qnt >= corr->ord.qntMissIng)  // la quantità che era mancata al missing adesso è disponibile
         ){
 
           int newMissIng = -1;
@@ -281,7 +277,7 @@ void esegui_input(inpHeader h){
 
 
 int cerca_ricetta(char * nome) {
-  Ptr_cella cl = cerca_cella(idxRicettario[whatTree(nome[0])].root, nome);
+  Ptr_cella cl = cerca_cella(idxRicettario.root, nome);
   if(cl == NULL) return -1;
   return cl->id;
 }
@@ -315,9 +311,9 @@ void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
   rt.comp = cr;
   rt.len = len;
   rt.t = -1;
-  rt.maxQnt = MAXQNT;
+  rt.maxQnt = INF;
 
-  aggiungi_cella(&idxRicettario[whatTree(nome[0])], init_cella(nome, ricettario_push(rt)));
+  aggiungi_cella(&idxRicettario, init_cella(nome, ricettario_push(rt)));
 
 }
 
@@ -443,12 +439,11 @@ void malloc_failed(){
 // Ritorna l'idice a cui ha trovato o aggiunto l'ingrediente
 int aggiungi_ingrediente(char * ing){
 
-  int wT = whatTree(ing[0]);
-  Ptr_cella x = cerca_cella(ingredienti[wT].root, ing);
+  Ptr_cella x = cerca_cella(ingredienti.root, ing);
 
   if(x == NULL){
       maxId += 1;
-      aggiungi_cella(&ingredienti[wT], init_cella(ing, maxId));
+      aggiungi_cella(&ingredienti, init_cella(ing, maxId));
 
       //Espando il magazzino
       if(maxId >= (int) magazzino.len){
@@ -462,18 +457,15 @@ int aggiungi_ingrediente(char * ing){
   return x->id;
 }
 
-//Riceve in Input ignora i primi due parametri dando per scontato che siano l'istruzione ed il nome della ricetta
-//e ritorna un array di componenti della ricetta
 CompRicetta * get_comp_ricetta(uint * len){
   
-  const uint defDim = 3; // 3 sembra essere il valore ottimale
   bool endCommand = false;
-  CompRicetta * comp = malloc(sizeof(CompRicetta) * defDim);
+  CompRicetta * comp = malloc(sizeof(CompRicetta));
 
   uint idx = 0; 
   while(!endCommand){
     
-    if(idx >= defDim){
+    if(idx > 0){
       comp = realloc(comp, sizeof(CompRicetta) * (idx + 1));
     }
 
@@ -532,15 +524,14 @@ bool ricetta_in_pronti(int id){
 //  - 1 se non trovata
 //  - 2 se ordini in coda
 int rimuovi_ricetta(char * nome){
-  int wT = whatTree(nome[0]); 
-  Ptr_cella x = cerca_cella(idxRicettario[wT].root, nome);
+  Ptr_cella x = cerca_cella(idxRicettario.root, nome);
   
   if(x != NULL){
     if(ricetta_in_pronti(x->id) || ricetta_in_coda(x->id, attesa)){
         return 2;
     }
     else{
-      x = rimuovi_cella(&idxRicettario[wT], x);
+      x = rimuovi_cella(&idxRicettario, x);
       dealloca_ricetta(x->id);
       validRctId = push_val(validRctId, x->id);
       free(x->key);
@@ -572,7 +563,7 @@ void espandi_magazzino(int ingId){
   magazzino.len = len;
 }
 
-bool bsArena(Arena * ar, AreanaData data, int * minIdx){
+bool bsArena(Arena * ar, ArenaData data, int * minIdx){
   int r = 0;
   int q = ar->len - 1;
 
@@ -615,20 +606,18 @@ void aggiungi_lotti(){
       sez->qnt += qnt;
 
       int d = 0;
-      if(!bsArena(&sez->lts, (AreanaData) lt, &d)){
+      if(!bsArena(&sez->lts, (ArenaData) lt, &d)){
         if((uint) d >= sez->lts.len){
-          append_arena(&sez->lts, (AreanaData) lt);
+          append_arena(&sez->lts, (ArenaData) lt);
         }
         else{
 
-          AreanaData * newBuff = malloc(sizeof(AreanaData) * (sez->lts.len + 1));
           int i = (sez->lts.buff[d].lt.scadenza < scad) ? 0 : 1;
-          memcpy(newBuff, sez->lts.buff, sizeof(AreanaData) * (d + i));
-          newBuff[d + i].lt = lt;
-          memcpy(&newBuff[d + 1 + i], &sez->lts.buff[d + i], sizeof(AreanaData) * (sez->lts.len - d - i));
 
-          free(sez->lts.buff);
-          sez->lts.buff = newBuff;
+          if(sez->lts.len >= sez->lts.size) sez->lts.buff = realloc(sez->lts.buff, sizeof(ArenaData) * (sez->lts.len + 1));
+          memmove(&sez->lts.buff[d + 1 + i], &sez->lts.buff[d + i], sizeof(ArenaData) * (sez->lts.len - d - i));
+          sez->lts.buff[d + i].lt = lt;
+
           sez->lts.len += 1;
           sez->lts.size = sez->lts.len;
 
@@ -672,7 +661,7 @@ void rimuovi_scaduti(Sezione * sez){
 int controlla_scorte(Ordine ord, int * idxLastComp){
     
   Ricetta * rc = &ricettario.rts[ord.rcId];
-  int maxQnt = MAXQNT;
+  int maxQnt = INF;
 
   rc->t = t;
 
@@ -719,7 +708,7 @@ bool ci_sono_ingr(Ordine ord, int * missIng, int * qntMissIng){
   int lastIdxComp = -1;
   int out = controlla_scorte(ord, &lastIdxComp); 
   if (missIng != NULL) *missIng = out;
-  if (qntMissIng != NULL) *qntMissIng = ricettario.rts[ord.rcId].comp[lastIdxComp].qnt * ord.qnt;
+  if (qntMissIng != NULL && lastIdxComp >= 0) *qntMissIng = ricettario.rts[ord.rcId].comp[lastIdxComp].qnt * ord.qnt;
 
   #if STATS
     if(out == -1) num_successi++;
@@ -765,7 +754,7 @@ void enqueue(Ptr_ordine elem, Coda * cd){
   cd->sp = elem;
 }
 
-void append_arena(Arena * ar, AreanaData data){
+void append_arena(Arena * ar, ArenaData data){
   ar->len++;
 
   if(ar->len <= ar->size){
@@ -773,7 +762,7 @@ void append_arena(Arena * ar, AreanaData data){
     return;
   }
   
-  uint newSize = sizeof(AreanaData) * ar->len;
+  uint newSize = sizeof(ArenaData) * ar->len;
   ar->buff = realloc(ar->buff, newSize);
 
   ar->buff[ar->len - 1] = data;
@@ -785,7 +774,7 @@ void aggiungi_ordine(Ordine ord, Coda * cd){
   Ptr_ordine p = malloc(sizeof(listaordini_t));
   p->ord = ord;
   p->next = NULL;
-  if(cd == NULL) append_arena(&pronti,(AreanaData) p);
+  if(cd == NULL) append_arena(&pronti,(ArenaData) p);
   else enqueue(p, cd);
  
 }
@@ -862,7 +851,6 @@ void sposta_ordini_corriere(){
     }
   }
 
-  //Prendiamo la lista di ordini pronti e la splittiamo in due nuovi array, uno di ordini da spedire e uno di ordini ancora pronti ma che non stavano nel corriere.
   corriere.len = cont;
   corriere.buff = &pronti.buff[pronti.len - cont].pOrd; 
   pronti.len -= cont;

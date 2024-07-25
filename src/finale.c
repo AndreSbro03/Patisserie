@@ -1295,7 +1295,7 @@ bool ci_sono_ingr(Ordine ord, int * missIng, int * qntMissIng){
   int lastIdxComp = -1;
   int out = controlla_scorte(ord, &lastIdxComp); 
   if (missIng != NULL) *missIng = out;
-  if (qntMissIng != NULL) *qntMissIng = ricettario.rts[ord.rcId].comp[lastIdxComp].qnt * ord.qnt;
+  if (qntMissIng != NULL && lastIdxComp >= 0) *qntMissIng = ricettario.rts[ord.rcId].comp[lastIdxComp].qnt * ord.qnt;
 
   #if STATS
     if(out == -1) num_successi++;
