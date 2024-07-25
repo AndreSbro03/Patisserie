@@ -13,7 +13,7 @@ file(){
  
 
   if [[ $1 == 'main' ]]; then
-    #gcc -o build/bst.o -c src/bst.c
+    gcc -o build/rbt.o -c src/rbt.c
     gcc -o build/algoritmi.o -c src/algoritmi.c
     DFLAGS="build/*.o -lm" #-lX11
   else

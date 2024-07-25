@@ -5,6 +5,7 @@ inpgen/
 
 # Test files
 *.txt
+myout.txt
 
 # Valgrind files
 callgrind*

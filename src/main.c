@@ -1,10 +1,20 @@
+/*
+ *
+ *
+ *  Trovato bug nel passaggio a questo commit:
+ *    
+ *    $ git checkout 7adfd51
+ *
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
 #include "myTypes.h"
-#include "rbt.c"
+#include "rbt.h"
 #include "algoritmi.h"
 
 #define STATS false
