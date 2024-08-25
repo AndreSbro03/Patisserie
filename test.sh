@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test_output(){
+test_out(){
   NOME=$1 
   ./build/$NOME < Tests/"open$2.txt" > myout.txt 
   sdiff myout.txt Tests/"open$2.output.txt";

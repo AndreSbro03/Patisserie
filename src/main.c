@@ -1,9 +1,15 @@
 /*
+ *  Codice sviluppato interamente da Andrea Sbrogiò ( andresbrogi03@gmail.com ). 
+ *  Tutte le specifiche relative al codice sono presenti nella cartella PDF.
+ *  
+ *  Usato il codice come preferite. Se vi serve per un futuro progetto del corso di API state attenti attenti 
+ *  al software di controllo copiatura.
+ *
+ *  Realizzato nel 2024.
  *
  *
- *  Trovato bug nel passaggio a questo commit:
- *    
- *    $ git checkout 7adfd51
+ *  Uno dei ckeck nei rifornimenti è un bug 
+ *  */ #define BUG 0 /*
  *
  *
  */
@@ -17,7 +23,11 @@
 #include "rbt.h"
 #include "algoritmi.h"
 
+// Attivazinoe statiche per il numero di chiamate a ci_sono_ingr e il numero di volte in cui questa chiamata effettivamente ha avuto un riscontro positivo
 #define STATS false
+
+// INF = MAX_INT
+#define INF (int) 2147483647
 
 // GESTIONE INPUT 
 char * get_token();
@@ -62,33 +72,32 @@ bool ricetta_in_coda(int id, Coda cd);
 void espandi_corriere();
 void dequeue(Coda * cd);
 void sposta_ordini_corriere();
-void carica_corriere();
+void spedisci_ordini();
 void ripristina_corriere();
 
 /*
  * VARIABILI GLOBALI
 */
 
-#define INF (int) 2147483647
-
+// tempo del programma
 int t = 0;
-bool end_program = false;
 
-//Albero idxRicettario = {.root = &Tnil};
-Ricettario ricettario = {.rts = NULL, .len = 0};
+// Hash tables utilizzate per conservare tutti i dati relativi alle ricette e agli ingredineti, compresi i lotti.
+Ricettario ricettario = { .rts = NULL,  .len = 0 };
+Magazzino magazzino   = { .sez = NULL,  .len = 0 };
 
-//Albero ingredienti = {.root = &Tnil};
+// Alberi per la ricerca rapida delle chiavi d'accesso alle hash tables
 Albero ingredienti = { .root = &Tnil };
 Albero idxRicettario = { .root = &Tnil };
+
+// Massimo id degli ingredienti salvati nell'albero
+// TODO: togli questo numero e copia il processo usato in ricettario_push
 int maxId = -1;
 
+// Lista di indirizzi riutilizzabili all'interno dell ricettario, facila da gestire perchè esiste la funzione rimuovi ricetta, non esistendo un corrispettivo per gli ingredienti ho evitato di riciclare gli id di ques'ultimi.
 Ptr_nodo validRctId = NULL;
 
-Magazzino magazzino = {
-  .sez = NULL,
-  .len = 0
-};
-
+// Dati necessari per la gestione del corriere
 Corriere corriere = {
   .t = 0,
   .cap = 0,
@@ -96,8 +105,10 @@ Corriere corriere = {
   .len = 0
 };
 
-//Coda pronti = {.buff = NULL, .sp = NULL};
+// Lista degli ordini pronti viene gestia come un arena così l'ordinamento al momento del passaggio del corriere è rapido
 Arena pronti = {.buff = NULL, .len = 0, .size = 0};
+
+// Lista degli ordini in attesa visto che l'aggiunzione in questa lista avviene sempre in coda mentre la rimozione sempre in testa l'ho gestita come una coda.
 Coda attesa = {.buff = NULL, .sp = NULL};
 
 #if STATS
@@ -113,12 +124,14 @@ int main(){
 
   init_corriere();
 
+  bool end_program = false;
+  // Finchè l'input non termina entro in un loop
   while(!end_program){
     //printf("\ntime: %d\n", t);
 
     if(t % corriere.t == 0 && t != 0){
       mergeSort(&pronti.buff->pOrd, 0, pronti.len - 1, TIME_DECR);
-      carica_corriere();
+      spedisci_ordini();
       ripristina_corriere();
     }
 
@@ -128,10 +141,11 @@ int main(){
     //stampa_lotti(magazzino.sez[0].lts);
     //stampa_magazzino();
     
+    // Se l'istruzione era del tipo END setto la flag per terminare il programma a true
     if(h.istr == END) end_program = true;
-    else{
-      t++;
-    } 
+    
+    // Incremento il tempo
+    t++;
   }
   
   #if STATS
@@ -139,12 +153,11 @@ int main(){
     printf("Numero chiamate di csi utili: %f\n", (float) num_successi/num_chiamate_csi);
   #endif
 
-  //stampa_albero(idxRicettario.root, 0);
-  dealloca_albero(idxRicettario.root, &dealloca_ricetta);
-  dealloca_albero(ingredienti.root, NULL);
-  dealloca_magazzino();
+  dealloca_albero(idxRicettario.root, &dealloca_ricetta); // Libero albero ricettario
+  dealloca_albero(ingredienti.root, NULL);                // Libero albero ingredienti
+  dealloca_magazzino();                                   // Libero magazzino
   for(uint i = 0; i < pronti.len; i++){
-    free((Ptr_ordine) pronti.buff[i].pOrd);
+    free((Ptr_ordine) pronti.buff[i].pOrd);               // Libero tutti i puntatori a ordine evenutalmente rimasti in pronti
   }
   free(pronti.buff);
   dealloca_ordini(&attesa);
@@ -165,10 +178,10 @@ void esegui_input(inpHeader h){
     case AGG:
 
       if(cerca_ricetta(h.nome) >= 0){
-        //printf("Esiste già una ricetta chiamata \"%s\".\n", nome);
+        /// Se esiste già una ricetta con quel nome stampo ingorato e salto alla prossima istruzione
         printf("ignorato\n");
         free(h.nome);
-        seek_eol();
+        seek_eol(); 
       }
       else{
         uint len;
@@ -195,16 +208,19 @@ void esegui_input(inpHeader h){
       
       aggiungi_lotti();
 
-      // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati che mancavano di un ingrediente che è appena stato rifornito
+      // Controlliamo se ci sono ordini sulla lista d'attesa che possono essere preparati
       Ptr_ordine prec = NULL;
       for(Ptr_ordine corr = attesa.buff; corr != NULL; ){
         
-        Ricetta rc = ricettario.rts[corr->ord.rcId];
+        //Ricetta rc = ricettario.rts[corr->ord.rcId];
        
         if(
           (magazzino.sez[corr->ord.missIng].reStock == t) &&              // c'è stato un rifornimento dell'ingrediente che mi mancava 
           magazzino.sez[corr->ord.missIng].qnt > 0 &&                     // quell'ingrediente non è già finito
-          (rc.maxQnt >= corr->ord.qnt || rc.t != t) &&                    // la quantità massima producibile della ricetta sia maggiore di quella che mi serve
+          #if BUG 
+            (rc.maxQnt >= corr->ord.qnt || rc.t != t) &&                  // la quantità massima producibile della ricetta sia maggiore di quella che mi serve
+
+          #endif                    
           (magazzino.sez[corr->ord.missIng].qnt >= corr->ord.qntMissIng)  // la quantità che era mancata al missing adesso è disponibile
         ){
 
@@ -214,6 +230,7 @@ void esegui_input(inpHeader h){
 
             prepara_ordine(corr->ord);
 
+            /// Tologo l'elemento dalla coda
             if(prec != NULL){
               prec->next = corr->next;
               free(corr);
@@ -230,6 +247,7 @@ void esegui_input(inpHeader h){
               if(corr == NULL) break;
               prec = NULL;
             }
+
           }
           else{
             corr->ord.missIng = newMissIng;
@@ -309,11 +327,6 @@ int ricettario_push(Ricetta rt){
 }
 
 // Controlla se la ricetta esiste già, se no la aggiunge al ricettario
-//
-// PARAMETRI:
-//  - "nome" nome della ricetta
-//  - "cr" lista di componenti della ricetta
-//
 void aggiungi_ricetta(char * nome, CompRicetta * cr, uint len){
 
   Ricetta rt;
@@ -435,10 +448,6 @@ char * get_token(){
 
   return outString;
 
-}
-
-int whatTree(char x){
-  return x - '0';
 }
 
 void malloc_failed(){
@@ -691,20 +700,30 @@ int controlla_scorte(Ordine ord, int * idxLastComp){
       rimuovi_scaduti(sez);
       sez->reStock = t;
     }
+    /*
+      *
+      * Se io ho 6 uova, 3 zucchero e 10 farina e la mia ricetta chiede 3, 1, 6:
+      *   maxRcIng = 2, 3, 1
+      *   maxQnt = 2, 2, 1
+      * Se l'ordine della ricetta ne richiedeva al massimo 1 allora va bene, altrimenti ritorniamo i dati della miss. 
+      * Salviamo 1 rc->maxQnt a prescindere dal risultato.
+      *
+    */
       
-    //Calcoliamo il numero massimo di ricette che possiamo preparare
-    int maxRc = sez->qnt / rc->comp[i].qnt;
-    if(maxRc < maxQnt) maxQnt = maxRc;
+    // Calcoliamo il numero massimo di ricette che possiamo preparare con questo ingrediente
+    int maxRcIng = sez->qnt / rc->comp[i].qnt;
 
-    // se il numero massimo di ricette preparabili non è sufficente termino
-    if(maxRc < ord.qnt){
-      rc->maxQnt = maxRc;
+    // Se la quantità producibili con questi ingredienti è minore della quantità massima che ci eravamo salvati in precedenza andiamo a salvare il nuovo valore
+    if(maxRcIng < maxQnt) rc->maxQnt = maxRcIng;
+
+    // Se il numero massimo di ricette producibili con questoo ingredinete è minore del numero richiesto dall'ordine termino e salvo come ingredinete mancante l'ingredinete corrente e aggiorno la maxQnt nel caso fosse cambiata
+    if(maxRcIng < ord.qnt){
       if(idxLastComp != NULL) *idxLastComp = i;
       return id;
     } 
   }
 
-  rc->maxQnt = maxQnt;
+  // Se il codice arriva fino a qui significa che tutti gli ingredienti sono presenti. Salviamo comunque il numero massimo di ricette producibili e ritorniamo un id negativo per segnalare il successo.
   if(idxLastComp != NULL) *idxLastComp = -1;
   return -1;
 
@@ -726,6 +745,7 @@ bool ci_sono_ingr(Ordine ord, int * missIng, int * qntMissIng){
   return out == -1;
 }
 
+// Funzione che rimuove gli ingredienti utilizzati per un ordine. Deve essere chiamata dopo aver controllato che ci siano ingredienti sufficenti, altrimenti termina il programma.
 void preleva_ingredienti(Sezione * sez, int qnt){
 
   int left = qnt;
@@ -867,7 +887,7 @@ void sposta_ordini_corriere(){
 
 }
 
-void carica_corriere(){
+void spedisci_ordini(){
   sposta_ordini_corriere();
   
   if(corriere.len == 0) {
