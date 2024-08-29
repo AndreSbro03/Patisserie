@@ -3,8 +3,12 @@
 Programma per il corso di Algoritmi e principi dell'informatica del Politecnico di Milano (as. 2023-2024).
 Il codice ha ricevuto una valutazione di 30L/30 completando il test con:
     
-    1.219 secondi su 1.5 minimi richiesti
+    1.198 secondi su 1.5 minimi richiesti
     9,60 MiB su 14 minimi richiesti
+
+## Bug 
+
+Sia nel file main sia nel file finale (quello da consegnare) è presente una flag BUG. Questo perchè mi sono reso conto che nonstante sul sito mi desse output corretto c'era qualche testcase che mi dava errori. Ho scoperto esserci un bug con un if. Mi ero detto che un giorno l'averei fixato ma eccoci qui, il bug ancora c'è e volendo si può riattivare.
 
 ## Perchè ho condiviso il codice
 
@@ -30,7 +34,15 @@ Buona fortuna per il vostro progetto!
 
 ## Come buildare e lanciare il codice
 
+Parto dal pesupposto che si stia usando linux.
+
 Ho usato un file bash per il building dell'eseguibile
+
+Usa:
+    
+    chmod +x build.sh
+
+per rendere eseguibile il file.
 
 Per buildare il codice in modalità release:
 
@@ -56,7 +68,13 @@ Se si vogliono testare altri casi è facilmente scalabile il codice del file bui
 
 ## Come testare il codice
 
-Sempre con l'utilizzo di un file bash
+Sempre con l'utilizzo di un file bash.
+
+Usa:
+
+    chmod +x test.sh
+
+per rendere eseguibile il file.
 
 Se si vuole stampare il confronto completo:
     

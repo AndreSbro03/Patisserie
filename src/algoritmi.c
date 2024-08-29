@@ -1,5 +1,6 @@
 #include "algoritmi.h"
 #include "myTypes.h"
+#include <math.h>
 
 //quicksort
 void swap(lotto_t * a, int i1, int i2){
@@ -49,32 +50,27 @@ void insertion_sort(Ordine * a, int len){
   }
 }
 
-void merge(Ptr_ordine arr[], int l, int m, int r, int type) 
+void merge(Ptr_ordine arr[], int p, int q, int r, int type) 
 { 
-    int i, j, k; 
-    int n1 = m - l + 1; 
-    int n2 = r - m; 
+  int i, j, k;
+
+  int n1 = q - p + 1;
+  int n2 = r - q;
+
+  // Alloca due nuovi arrays
+  Ptr_ordine L[n1], R[n2];
+
+  for(i = 0; i < n1; ++i){
+    L[i] = arr[p + i];
+  }
+  for(j = 0; j < n2; ++j){
+    R[j] = arr[q + j + 1];
+  }
+
+  i = 0;
+  j = 0;
   
-    // Create temp arrays 
-    Ptr_ordine L[n1], R[n2]; 
-  
-    // Copy data to temp arrays 
-    // L[] and R[] 
-    for (i = 0; i < n1; i++) 
-        L[i] = arr[l + i]; 
-    for (j = 0; j < n2; j++) 
-        R[j] = arr[m + 1 + j]; 
-  
-    // Merge the temp arrays back 
-    // into arr[l..r] 
-    // Initial index of first subarray 
-    i = 0; 
-  
-    // Initial index of second subarray 
-    j = 0; 
-  
-    // Initial index of merged subarray 
-    k = l;
+  k = p;
   if(type == 1){ // Lavorando con tempo
     
     while (i < n1 && j < n2) { 
@@ -115,37 +111,31 @@ void merge(Ptr_ordine arr[], int l, int m, int r, int type)
     } 
   }
   
-    // Copy the remaining elements 
-    // of L[], if there are any 
-    while (i < n1) { 
-        arr[k] = L[i]; 
-        i++; 
-        k++; 
-    } 
-  
-    // Copy the remaining elements of 
-    // R[], if there are any 
-    while (j < n2) { 
-        arr[k] = R[j]; 
-        j++; 
-        k++; 
-    } 
+
+  // Copio i restanti elementi di L e di R
+   while (i < n1) { 
+      arr[k] = L[i]; 
+      i++; 
+      k++; 
+  } 
+
+  while (j < n2) { 
+      arr[k] = R[j]; 
+      j++; 
+      k++; 
+  } 
 } 
   
-// l is for left index and r is 
-// right index of the sub-array 
-// of arr to be sorted 
-void mergeSort(Ptr_ordine arr[], int l, int r, int type) 
+void mergeSort(Ptr_ordine arr[], int p, int r, int type) 
 { 
-    if (l < r) { 
-        // Same as (l+r)/2, but avoids 
-        // overflow for large l and r 
-        int m = l + (r - l) / 2; 
+    if (p < r) { 
+
+      int q = (int) floor((p + r) / 2); 
   
-        // Sort first and second halves 
-        mergeSort(arr, l, m, type); 
-        mergeSort(arr, m + 1, r, type); 
+      // Sort first and second halves 
+      mergeSort(arr, p, q, type); 
+      mergeSort(arr, q + 1, r, type); 
   
-        merge(arr, l, m, r, type); 
+      merge(arr, p, q, r, type); 
     } 
 } 
