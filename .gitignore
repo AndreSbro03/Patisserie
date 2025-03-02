@@ -1,7 +1,6 @@
 build/
 .vscode/
 esempi/
-inpgen/
 
 # Test files
 *.txt
